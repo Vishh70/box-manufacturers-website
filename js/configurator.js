@@ -66,6 +66,7 @@
         setupSuggestion();
         setupExplode();
         setupReset();
+        setupWhatsAppQuote();
         updateSpecs();
 
         // Hide hint after first interaction
@@ -448,6 +449,58 @@
         ${warning}
       `;
             result.style.display = 'block';
+        });
+    }
+
+    // ---- WHATSAPP QUOTE ----
+    function setupWhatsAppQuote() {
+        const btn = document.getElementById('btnQuoteWhatsApp');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            const name = (document.getElementById('custName').value || '').trim();
+            const phone = (document.getElementById('custPhone').value || '').trim();
+
+            if (!name || !phone) {
+                alert('Please fill in your Name and Mobile Number to request a quote.');
+                return;
+            }
+
+            const company = (document.getElementById('custCompany').value || '').trim();
+            const qty = (document.getElementById('custQty').value || '').trim();
+            const material = document.getElementById('custMaterial').value;
+            const printing = document.getElementById('custPrinting').value;
+            const plyData = PLY_DATA[state.ply];
+
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = today.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+            const sizeStr = `${state.length} × ${state.width} × ${state.height} mm`;
+
+            let msg = `*Quotation Request – Corrugated Box*\n`;
+            msg += `Date: ${dateStr}  Time: ${timeStr}\n\n`;
+
+            msg += `*Customer Details*\n`;
+            msg += `• Name: ${name}\n`;
+            msg += `• Mobile: ${phone}\n`;
+            msg += `• Company (if any): ${company || '—'}\n\n`;
+
+            msg += `*Box Specification*\n`;
+            msg += `• Box Type: Corrugated Box (RSC)\n`;
+            msg += `• Ply: ${state.ply}-Ply (${plyData.label.split('(')[1]}\n`;
+            msg += `• Size (L × W × H): ${sizeStr}\n`;
+            msg += `• Wall Thickness: ${plyData.thickness} mm\n`;
+            msg += `• Weight Capacity: ${plyData.capacity}\n`;
+            msg += `• Material: ${material}\n`;
+            msg += `• Printing: ${printing}\n`;
+            msg += `• Quantity Required: ${qty || '—'} pcs\n\n`;
+
+            msg += `Please share quotation and delivery timeline for the above specification.\n`;
+            msg += `Thank you.`;
+
+            const waUrl = `https://wa.me/917066959760?text=${encodeURIComponent(msg)}`;
+            window.open(waUrl, '_blank');
         });
     }
 

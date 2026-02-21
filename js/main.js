@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollReveal();
   initProductFilters();
   initContactForm();
+  initContactWhatsApp();
   initPriceTiers();
   initActiveNav();
 });
@@ -188,6 +189,63 @@ function initContactForm() {
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+/* ---- Contact WhatsApp Quote ---- */
+function initContactWhatsApp() {
+  const btn = document.getElementById('btnContactWhatsApp');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    const form = document.getElementById('contactForm');
+    if (!form) return;
+
+    const name = (form.querySelector('#name').value || '').trim();
+    const phone = (form.querySelector('#phone').value || '').trim();
+
+    if (!name || !phone) {
+      alert('Please fill in your Name and Phone Number.');
+      return;
+    }
+
+    const company = (form.querySelector('#company').value || '').trim();
+    const inquiry = form.querySelector('#inquiry');
+    const inquiryText = inquiry && inquiry.value ? inquiry.options[inquiry.selectedIndex].text : '';
+    const boxType = form.querySelector('#boxType');
+    const boxTypeText = boxType && boxType.value ? boxType.options[boxType.selectedIndex].text : '';
+    const quantity = (form.querySelector('#quantity').value || '').trim();
+    const message = (form.querySelector('#message').value || '').trim();
+
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeStr = today.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    let msg = `*Quotation Request – Corrugated Box*\n`;
+    msg += `Date: ${dateStr}  Time: ${timeStr}\n\n`;
+
+    msg += `*Customer Details*\n`;
+    msg += `• Name: ${name}\n`;
+    msg += `• Mobile: ${phone}\n`;
+    msg += `• Company (if any): ${company || '—'}\n\n`;
+
+    if (inquiryText || boxTypeText || quantity) {
+      msg += `*Box Specification*\n`;
+      if (boxTypeText) msg += `• Box Type: ${boxTypeText}\n`;
+      if (inquiryText) msg += `• Inquiry Type: ${inquiryText}\n`;
+      if (quantity) msg += `• Quantity Required: ${quantity} pcs\n`;
+      msg += `\n`;
+    }
+
+    if (message) {
+      msg += `*Requirements*\n${message}\n\n`;
+    }
+
+    msg += `Please share quotation and delivery timeline for the above specification.\n`;
+    msg += `Thank you.`;
+
+    const waUrl = `https://wa.me/917066959760?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank');
+  });
 }
 
 /* ---- Price Tier Selection (product detail) ---- */
