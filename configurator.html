@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Box Configurator — ARTI ENTERPRISES</title>
+    <meta name="description"
+        content="Configure your corrugated box in 3D. Adjust dimensions, select ply type, and get instant specifications. Interactive box configurator by ARTI ENTERPRISES.">
+    <link rel="canonical" href="https://artienterprises.com/configurator.html">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/configurator.css">
+</head>
+
+<body>
+    <header class="header scrolled" id="header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">A</div>
+                <div class="logo-text">ARTI <span>ENTERPRISES</span></div>
+            </a>
+            <nav class="nav" id="nav">
+                <a href="index.html">Home</a>
+                <a href="products.html">Products</a>
+                <a href="configurator.html" class="active">3D Configurator</a>
+                <a href="about.html">About</a>
+                <a href="blog.html">Blog</a>
+                <a href="contact.html">Contact</a>
+                <a href="contact.html" class="btn btn-primary btn-sm">Get Quote</a>
+            </nav>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+        </div>
+    </header>
+
+    <section class="page-header">
+        <h1>3D Box Configurator</h1>
+        <p>Configure your corrugated box dimensions, ply type, and get instant specifications</p>
+        <div class="breadcrumb">
+            <a href="index.html">Home</a><span>/</span><span class="current">3D Configurator</span>
+        </div>
+    </section>
+
+    <!-- Configurator -->
+    <section class="section">
+        <div class="container">
+            <div class="cfg-layout">
+
+                <!-- 3D Viewer -->
+                <div class="cfg-viewer-panel">
+                    <div class="cfg-viewer" id="boxViewer">
+                        <div class="cfg-viewer-hint" id="viewerHint">Drag to rotate</div>
+                    </div>
+                    <div class="cfg-viewer-controls">
+                        <button class="cfg-btn-icon" id="btnExplode" title="Exploded View">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+                                <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+                                <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+                                <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+                            </svg>
+                            <span>Exploded View</span>
+                        </button>
+                        <button class="cfg-btn-icon" id="btnReset" title="Reset View">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                <path d="M3 3v5h5" />
+                            </svg>
+                            <span>Reset</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Controls Panel -->
+                <div class="cfg-controls-panel">
+
+                    <!-- Dimensions -->
+                    <div class="cfg-section">
+                        <h3 class="cfg-section-title">Box Dimensions</h3>
+                        <div class="cfg-unit-toggle">
+                            <button class="cfg-unit active" data-unit="mm">mm</button>
+                            <button class="cfg-unit" data-unit="in">inches</button>
+                        </div>
+
+                        <div class="cfg-slider-group">
+                            <label class="cfg-label">Length <span class="cfg-value" id="valLength">300</span><span
+                                    class="cfg-unit-label">mm</span></label>
+                            <input type="range" class="cfg-range" id="sliderLength" min="50" max="800" value="300"
+                                step="5">
+                        </div>
+                        <div class="cfg-slider-group">
+                            <label class="cfg-label">Width <span class="cfg-value" id="valWidth">200</span><span
+                                    class="cfg-unit-label">mm</span></label>
+                            <input type="range" class="cfg-range" id="sliderWidth" min="50" max="600" value="200"
+                                step="5">
+                        </div>
+                        <div class="cfg-slider-group">
+                            <label class="cfg-label">Height <span class="cfg-value" id="valHeight">150</span><span
+                                    class="cfg-unit-label">mm</span></label>
+                            <input type="range" class="cfg-range" id="sliderHeight" min="30" max="600" value="150"
+                                step="5">
+                        </div>
+                    </div>
+
+                    <!-- Ply Selection -->
+                    <div class="cfg-section">
+                        <h3 class="cfg-section-title">Ply Type</h3>
+                        <div class="cfg-ply-buttons">
+                            <button class="cfg-ply active" data-ply="3">
+                                <strong>3-Ply</strong>
+                                <span>Single Wall</span>
+                            </button>
+                            <button class="cfg-ply" data-ply="5">
+                                <strong>5-Ply</strong>
+                                <span>Double Wall</span>
+                            </button>
+                            <button class="cfg-ply" data-ply="7">
+                                <strong>7-Ply</strong>
+                                <span>Triple Wall</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live Specs -->
+                    <div class="cfg-section">
+                        <h3 class="cfg-section-title">Specifications</h3>
+                        <div class="cfg-specs">
+                            <div class="cfg-spec-row">
+                                <span class="cfg-spec-label">Wall Thickness</span>
+                                <span class="cfg-spec-value" id="specThickness">3.2 mm</span>
+                            </div>
+                            <div class="cfg-spec-row">
+                                <span class="cfg-spec-label">Weight Capacity</span>
+                                <span class="cfg-spec-value" id="specCapacity">5 - 15 kg</span>
+                            </div>
+                            <div class="cfg-spec-row">
+                                <span class="cfg-spec-label">Layers</span>
+                                <span class="cfg-spec-value" id="specLayers">Outer + Flute + Inner</span>
+                            </div>
+                            <div class="cfg-spec-row">
+                                <span class="cfg-spec-label">Box Style</span>
+                                <span class="cfg-spec-value">RSC (Regular Slotted Container)</span>
+                            </div>
+                            <div class="cfg-spec-row">
+                                <span class="cfg-spec-label">Material</span>
+                                <span class="cfg-spec-value">Brown Kraft Paper</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Suggestion -->
+                    <div class="cfg-section">
+                        <h3 class="cfg-section-title">Smart Box Suggestion</h3>
+                        <p class="cfg-hint-text">Enter your product details to get a recommendation.</p>
+                        <div class="cfg-suggest-form">
+                            <div class="cfg-form-group">
+                                <label for="productWeight">Product Weight (kg)</label>
+                                <input type="number" id="productWeight" placeholder="e.g. 8" min="0.1" max="200"
+                                    step="0.5">
+                            </div>
+                            <div class="cfg-form-group">
+                                <label for="shippingType">Shipping Type</label>
+                                <select id="shippingType">
+                                    <option value="">Select type</option>
+                                    <option value="local">Local Delivery</option>
+                                    <option value="courier">Courier / E-Commerce</option>
+                                    <option value="longdist">Long Distance / Export</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="btnSuggest" style="width:100%">Get
+                                Recommendation</button>
+                        </div>
+                        <div class="cfg-suggestion" id="suggestionResult" style="display:none"></div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="cfg-section cfg-cta-box">
+                        <a href="contact.html" class="btn btn-primary btn-lg"
+                            style="width:100%;justify-content:center">Request Quote for This Box</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ply Comparison Table -->
+            <div class="cfg-table-section reveal">
+                <h2 class="section-title text-center">Ply Comparison Guide</h2>
+                <div class="cfg-table-wrap">
+                    <table class="cfg-table">
+                        <thead>
+                            <tr>
+                                <th>Ply Type</th>
+                                <th>Thickness</th>
+                                <th>Layers</th>
+                                <th>Weight Capacity</th>
+                                <th>Common Sizes (inches)</th>
+                                <th>Typical Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>3-Ply (Single Wall)</strong></td>
+                                <td>~3.2 mm</td>
+                                <td>Outer + Flute + Inner</td>
+                                <td>5 - 15 kg</td>
+                                <td>7x5x5, 8x6x4, 10x8x6, 12x12x12</td>
+                                <td>Courier, E-commerce, Moving</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5-Ply (Double Wall)</strong></td>
+                                <td>~6.1 mm</td>
+                                <td>Outer + Flute + Mid + Flute + Inner</td>
+                                <td>12 - 40 kg</td>
+                                <td>10x7x3, 15x10x10, 18x12x12</td>
+                                <td>Heavy goods, Fragile items</td>
+                            </tr>
+                            <tr>
+                                <td><strong>7-Ply (Triple Wall)</strong></td>
+                                <td>~10 mm</td>
+                                <td>Outer + 3 Flutes + 3 Liners</td>
+                                <td>50+ kg</td>
+                                <td>18x16x15, 27x13x14, 22x22x30</td>
+                                <td>Industrial, Export, High-weight</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Congruent Box Info -->
+            <div class="cfg-info-section reveal">
+                <div class="cfg-info-grid">
+                    <div class="cfg-info-card">
+                        <h3>What is a Congruent Box?</h3>
+                        <ul class="cfg-info-list">
+                            <li>Boxes that are exactly identical in Length, Width, Height, and Shape</li>
+                            <li>Manufactured to precise dimensional tolerances (±5 mm)</li>
+                            <li>Every box in a batch matches perfectly</li>
+                        </ul>
+                    </div>
+                    <div class="cfg-info-card">
+                        <h3>Benefits of Congruent Boxes</h3>
+                        <ul class="cfg-info-list">
+                            <li>Perfect stacking on pallets</li>
+                            <li>Efficient warehouse storage</li>
+                            <li>Uniform palletization for shipping</li>
+                            <li>Reduced shipping damage</li>
+                            <li>Accurate load and cost calculation</li>
+                            <li>Professional packaging standard</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <div class="logo-icon">A</div>
+                        <div class="logo-text">ARTI <span>ENTERPRISES</span></div>
+                    </a>
+                    <p>Leading corrugated box manufacturer in Pune. Supplying premium packaging solutions to businesses
+                        across
+                        Maharashtra since 2014.</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <div class="footer-links">
+                        <a href="index.html">Home</a>
+                        <a href="products.html">Products</a>
+                        <a href="configurator.html">3D Configurator</a>
+                        <a href="about.html">About Us</a>
+                        <a href="contact.html">Contact</a>
+                    </div>
+                </div>
+                <div>
+                    <h4>Products</h4>
+                    <div class="footer-links">
+                        <a href="products.html">3 Ply Boxes</a>
+                        <a href="products.html">5 Ply Boxes</a>
+                        <a href="products.html">7 Ply Boxes</a>
+                        <a href="products.html">Die-Cut Boxes</a>
+                    </div>
+                </div>
+                <div>
+                    <h4>Contact Us</h4>
+                    <div class="footer-contact-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        <span>GAT NO 1297, Chikhali, Pimpri Chinchwad, Pune — 411062</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2" />
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                        </svg>
+                        <a href="mailto:artienterprises17@rediffmail.com">artienterprises17@rediffmail.com</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2024 ARTI ENTERPRISES. All rights reserved. | <a href="privacy.html">Privacy</a> &middot;
+                    <a href="terms.html">Terms</a></span>
+                <div class="gstin-label">GSTIN: 27ABYFA4546J1ZS</div>
+            </div>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/917066959760?text=Hello%20ARTI%20ENTERPRISES%2C%20I%20need%20a%20quote%20for%20corrugated%20boxes"
+        target="_blank" rel="noopener" class="wa-float" aria-label="Chat on WhatsApp">
+        <svg viewBox="0 0 32 32">
+            <path
+                d="M16.004 0h-.008C7.174 0 0 7.176 0 16.004c0 3.5 1.132 6.744 3.054 9.376L1.056 31.08l5.924-1.96a15.9 15.9 0 0 0 9.024 2.884C24.828 32.004 32 24.828 32 16.004 32 7.176 24.828 0 16.004 0zm9.35 22.614c-.392 1.1-2.296 2.108-3.2 2.2-.82.092-1.86.132-3-.596-.696-.44-1.592-.972-2.744-1.9-4.844-3.896-7.976-8.248-8.216-8.632-.24-.38-1.96-2.608-1.96-4.972s1.24-3.528 1.68-4.012c.44-.484.96-.604 1.28-.604s.64.008.92.016c.296.012.696-.112 1.088.832.392.948 1.336 3.26 1.452 3.496.116.24.196.516.04.832-.156.316-.236.516-.468.792-.236.28-.496.624-.708.836-.236.236-.48.492-.208.968s1.216 2.004 2.612 3.248c1.796 1.6 3.312 2.096 3.78 2.332.468.236.74.196 1.012-.12.272-.316 1.168-1.36 1.48-1.828.312-.468.624-.388 1.052-.232.428.156 2.736 1.292 3.204 1.528.468.236.78.352.896.548.116.2.116 1.12-.276 2.22z" />
+        </svg>
+    </a>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/configurator.js"></script>
+</body>
+
+</html>

@@ -1,5 +1,6 @@
 /* ============================================
    ARTI ENTERPRISES — Main JavaScript
+   Light Theme — Clean & Professional
    ============================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -17,7 +18,7 @@ function initHeader() {
   const header = document.getElementById('header');
   if (!header) return;
   const onScroll = () => {
-    header.classList.toggle('scrolled', window.scrollY > 50);
+    header.classList.toggle('scrolled', window.scrollY > 30);
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -60,15 +61,13 @@ function initScrollReveal() {
   if (!reveals.length) return;
 
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, index) => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.classList.add('visible');
-        }, index * 100);
+        entry.target.classList.add('visible');
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
   reveals.forEach(el => observer.observe(el));
 }
@@ -147,13 +146,13 @@ function initContactForm() {
     const message = form.querySelector('#message');
 
     if (!name.value.trim() || !email.value.trim() || !message.value.trim()) {
-      errorMsg.textContent = '❌ Please fill in all required fields.';
+      errorMsg.textContent = 'Please fill in all required fields.';
       errorMsg.style.display = 'block';
       return;
     }
 
     if (!isValidEmail(email.value)) {
-      errorMsg.textContent = '❌ Please enter a valid email address.';
+      errorMsg.textContent = 'Please enter a valid email address.';
       errorMsg.style.display = 'block';
       return;
     }
@@ -177,7 +176,7 @@ function initContactForm() {
         throw new Error('Form submission failed');
       }
     } catch (err) {
-      errorMsg.textContent = '❌ Something went wrong. Please email us at artienterprises17@rediffmail.com';
+      errorMsg.textContent = 'Something went wrong. Please email us at artienterprises17@rediffmail.com';
       errorMsg.style.display = 'block';
     } finally {
       submitBtn.disabled = false;
