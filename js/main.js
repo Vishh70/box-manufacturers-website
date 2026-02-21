@@ -143,9 +143,10 @@ function initContactForm() {
     // Basic validation
     const name = form.querySelector('#name');
     const email = form.querySelector('#email');
+    const phone = form.querySelector('#phone');
     const message = form.querySelector('#message');
 
-    if (!name.value.trim() || !email.value.trim() || !message.value.trim()) {
+    if (!name.value.trim() || !email.value.trim() || !phone.value.trim() || !message.value.trim()) {
       errorMsg.textContent = 'Please fill in all required fields.';
       errorMsg.style.display = 'block';
       return;
