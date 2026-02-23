@@ -1154,7 +1154,8 @@ button {
 /* ---- WhatsApp Float ---- */
 .wa-float {
   position: fixed;
-  bottom: 28px;
+  bottom: 140px;
+  /* High enough to clear closed Tidio AND its label */
   right: 28px;
   z-index: 999;
   width: 56px;
