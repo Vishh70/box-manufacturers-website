@@ -3,7 +3,7 @@
    Light Theme — Clean & Professional
    ============================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
+function bootstrapMainScripts() {
   initHeader();
   initMobileNav();
   initScrollReveal();
@@ -12,7 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initContactWhatsApp();
   initPriceTiers();
   initActiveNav();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootstrapMainScripts);
+} else {
+  bootstrapMainScripts();
+}
 
 /* ---- Sticky Header with scroll effect ---- */
 function initHeader() {

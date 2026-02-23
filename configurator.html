@@ -51,7 +51,7 @@
                         <div class="cfg-viewer-hint" id="viewerHint">Drag to rotate</div>
                     </div>
                     <div class="cfg-viewer-controls">
-                        <button class="cfg-btn-icon" id="btnExplode" title="Exploded View">
+                        <button class="cfg-btn-icon" id="btnExplode" title="Show Layers">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path d="M8 3H5a2 2 0 0 0-2 2v3" />
@@ -59,7 +59,7 @@
                                 <path d="M3 16v3a2 2 0 0 0 2 2h3" />
                                 <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
                             </svg>
-                            <span>Exploded View</span>
+                            <span>Show Layers</span>
                         </button>
                         <button class="cfg-btn-icon" id="btnReset" title="Reset View">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -132,7 +132,7 @@
                             </div>
                             <div class="cfg-spec-row">
                                 <span class="cfg-spec-label">Weight Capacity</span>
-                                <span class="cfg-spec-value" id="specCapacity">5 - 15 kg</span>
+                                <span class="cfg-spec-value" id="specCapacity">5 – 15 kg</span>
                             </div>
                             <div class="cfg-spec-row">
                                 <span class="cfg-spec-label">Layers</span>
@@ -145,6 +145,19 @@
                             <div class="cfg-spec-row">
                                 <span class="cfg-spec-label">Material</span>
                                 <span class="cfg-spec-value">Brown Kraft Paper</span>
+                            </div>
+                            <div class="cfg-spec-row">
+                                <span class="cfg-spec-label">Recommended Use</span>
+                                <span class="cfg-spec-value" id="specRecommendedUse">Courier, E-commerce, Moving</span>
+                            </div>
+                            <div class="cfg-strength-row">
+                                <div class="cfg-strength-header">
+                                    <span class="cfg-spec-label">Strength Level</span>
+                                    <span class="cfg-spec-value" id="specStrengthLabel">Low</span>
+                                </div>
+                                <div class="cfg-strength-bar">
+                                    <div class="cfg-strength-fill" id="specStrengthFill"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -364,6 +377,7 @@
     </a>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
     <script src="js/main.js"></script>
     <script src="js/configurator.js"></script>
 </body>

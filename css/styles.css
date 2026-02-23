@@ -683,18 +683,52 @@ button {
   justify-content: center;
 }
 
-.hero-image-wrapper {
+.hero-3d-container {
   position: relative;
+  width: 100%;
+  height: 420px;
   border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--clr-border-light);
+  /* no overflow hidden — labels need to escape */
 }
 
-.hero-image-wrapper img {
+.hero-3d-canvas {
   width: 100%;
-  height: auto;
-  display: block;
+  height: 100%;
+  border-radius: var(--radius-xl);
+  cursor: grab;
+}
+
+.hero-3d-canvas:active {
+  cursor: grabbing;
+}
+
+.hero-3d-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: var(--radius-xl);
+}
+
+.hero-3d-label {
+  position: absolute;
+  opacity: 0;
+  background: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #78716C;
+  font-family: var(--ff-heading);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-50%);
+  z-index: 5;
+  transition: opacity 0.3s ease;
 }
 
 .hero-float-card {
@@ -1955,6 +1989,14 @@ button {
   }
 
   .hero-float-card {
+    display: none;
+  }
+
+  .hero-3d-container {
+    height: 280px;
+  }
+
+  .hero-3d-label {
     display: none;
   }
 
