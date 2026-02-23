@@ -26,8 +26,8 @@
 
     const ROTATION_SPEED = 0.003;  // radians per frame (~20s full turn)
     const DAMPING = 0.06;
-    const EXPLODE_INTERVAL = 15000; // ms
-    const EXPLODE_HOLD = 4000;      // ms
+    const EXPLODE_INTERVAL = 8000; // ms (more frequent so users see it)
+    const EXPLODE_HOLD = 3000;      // ms (hold for 3 seconds)
 
     let scene, camera, renderer, boxGroup;
     let topLiner, fluteMesh, bottomLiner;
