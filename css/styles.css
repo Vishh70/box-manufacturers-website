@@ -239,6 +239,30 @@ button {
   margin-bottom: 2rem;
 }
 
+.contact-trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: -0.75rem 0 1.5rem;
+}
+
+.contact-trust-strip span {
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-full);
+  background: var(--clr-accent-light);
+  border: 1px solid var(--clr-accent-border);
+  color: var(--clr-accent);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+}
+
+.contact-helper-text {
+  margin-top: 1rem;
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+  line-height: 1.7;
+}
+
 /* ---- Product Detail Helpers ---- */
 .price-unit {
   font-size: 0.9rem;
@@ -294,6 +318,13 @@ button {
 
 .btn-mt {
   margin-top: 1rem;
+}
+
+.lead-helper-text {
+  margin: 0 0 1.25rem;
+  font-size: var(--fs-sm);
+  color: var(--clr-accent);
+  font-weight: var(--fw-semibold);
 }
 
 /* ---- No Results ---- */
@@ -2011,6 +2042,15 @@ button {
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .contact-trust-strip {
+    gap: 0.5rem;
+  }
+
+  .contact-trust-strip span {
+    width: 100%;
+    text-align: center;
   }
 
   .values-grid {

@@ -44,6 +44,60 @@
         }
     };
 
+    function getSiteConfig() {
+        if (window.ARTI_SITE_UTILS && typeof window.ARTI_SITE_UTILS.getSiteConfig === 'function') {
+            return window.ARTI_SITE_UTILS.getSiteConfig();
+        }
+        return window.ARTI_SITE || {
+            phoneDisplay: '+91 9420996107',
+            whatsappBase: 'https://wa.me/919420996107',
+            whatsappGreeting: 'Hello ARTI ENTERPRISES'
+        };
+    }
+
+    function buildLeadMessage(payload) {
+        if (window.ARTI_SITE_UTILS && typeof window.ARTI_SITE_UTILS.buildLeadMessage === 'function') {
+            return window.ARTI_SITE_UTILS.buildLeadMessage(payload);
+        }
+        const site = getSiteConfig();
+        const safePayload = payload || {};
+        const details = Array.isArray(safePayload.details) ? safePayload.details.filter(Boolean) : [];
+        const lines = [
+            '*Quotation Request - ARTI ENTERPRISES*',
+            '',
+            '*Request Details*',
+            `- Request Type: ${safePayload.requestType || 'Quote Request'}`,
+            `- Source: ${safePayload.source || 'Website'}`
+        ];
+
+        if (safePayload.name || safePayload.phone || safePayload.company) {
+            lines.push('');
+            lines.push('*Customer Details*');
+            if (safePayload.name) lines.push(`- Name: ${safePayload.name}`);
+            if (safePayload.phone) lines.push(`- Mobile: ${safePayload.phone}`);
+            if (safePayload.company) lines.push(`- Company: ${safePayload.company}`);
+        }
+
+        if (details.length) {
+            lines.push('');
+            lines.push('*Requirements*');
+            details.forEach((detail) => lines.push(`- ${detail}`));
+        }
+
+        lines.push('');
+        lines.push(safePayload.closing || 'Please share quotation and delivery timeline for the above requirement.');
+        lines.push('Thank you.');
+
+        return lines.join('\n') || site.whatsappGreeting;
+    }
+
+    function buildWhatsAppUrl(message) {
+        if (window.ARTI_SITE_UTILS && typeof window.ARTI_SITE_UTILS.buildWhatsAppUrl === 'function') {
+            return window.ARTI_SITE_UTILS.buildWhatsAppUrl(message);
+        }
+        return `${getSiteConfig().whatsappBase}?text=${encodeURIComponent(message)}`;
+    }
+
     /* ── STATE ── */
     let state = {
         length: 300,
@@ -54,7 +108,7 @@
         exploded: false
     };
 
-    let scene, camera, renderer, mainGroup, labelRenderer;
+    let scene, camera, renderer, mainGroup, labelRenderer, groundPlane;
     let isDragging = false;
     let previousMouse = { x: 0, y: 0 };
     let rotationTarget = { x: -0.3, y: 0.5 };
@@ -64,9 +118,20 @@
     let zoomCurrent = 5;
     const ZOOM_MIN = 2.5;
     const ZOOM_MAX = 10;
+    const AUTO_ROTATE_SPEED = 0.42;
+    const AUTO_ROTATE_DELAY = 1200;
+    const FLOAT_AMPLITUDE = 0.07;
+    const FLOAT_SPEED = 1.35;
 
     /* ── keep a list of CSS2D labels so we can clean them up ── */
     let css2dLabels = [];
+    let animationFrameId = null;
+    let clock = null;
+    let lastInteractionAt = 0;
+    let textureCache = {
+        kraft: null,
+        corrugated: null
+    };
 
     /* ── INIT ── */
     function init() {
@@ -84,6 +149,7 @@
         setupExplode();
         setupReset();
         setupWhatsAppQuote();
+        setupDownloadSpec();
         updateSpecs();
 
         container.addEventListener('pointerdown', () => {
@@ -96,29 +162,62 @@
 
     /* ── KRAFT TEXTURE (procedural canvas) ── */
     function createKraftTexture() {
+        if (textureCache.kraft) return textureCache.kraft;
+
         const size = 512;
         const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
 
-        /* base fill */
-        ctx.fillStyle = '#c4a06a';
+        /* base fill with noise grain */
+        const gradient = ctx.createLinearGradient(0, 0, size, size);
+        gradient.addColorStop(0, '#d8b982');
+        gradient.addColorStop(0.5, '#c59d5f');
+        gradient.addColorStop(1, '#a67b46');
+        ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, size, size);
 
-        /* noise fibers */
-        for (let i = 0; i < 18000; i++) {
+        /* fiber grain */
+        for (let i = 0; i < 350; i++) {
+            const y = Math.random() * size;
+            const alpha = 0.02 + Math.random() * 0.04;
+            ctx.strokeStyle = `rgba(90,60,30,${alpha})`;
+            ctx.lineWidth = 0.8 + Math.random() * 1.5;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(size, y + (Math.random() - 0.5) * 20);
+            ctx.stroke();
+        }
+
+        /* recycled pulp specks */
+        for (let i = 0; i < 25000; i++) {
             const x = Math.random() * size;
             const y = Math.random() * size;
-            const len = 2 + Math.random() * 6;
-            const angle = (Math.random() - 0.5) * 0.4;
-            const brightness = 150 + Math.floor(Math.random() * 50);
-            ctx.strokeStyle = `rgba(${brightness}, ${brightness - 20}, ${brightness - 50}, ${0.08 + Math.random() * 0.12})`;
-            ctx.lineWidth = 0.5 + Math.random() * 0.5;
+            const len = 1 + Math.random() * 4;
+            const angle = Math.random() * Math.PI * 2;
+            const dark = Math.random() > 0.85;
+            const alpha = 0.05 + Math.random() * 0.15;
+            ctx.strokeStyle = dark ? `rgba(60,40,20,${alpha})` : `rgba(255,250,230,${alpha})`;
+            ctx.lineWidth = 0.4 + Math.random() * 0.4;
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
             ctx.stroke();
+        }
+
+        /* water stains / unevenness */
+        for (let i = 0; i < 15; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            const r = 20 + Math.random() * 60;
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+            grad.addColorStop(0, `rgba(130,100,60,${0.03 + Math.random() * 0.04})`);
+            grad.addColorStop(1, 'rgba(130,100,60,0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         /* subtle grain overlay */
@@ -137,29 +236,40 @@
 
         const tex = new THREE.CanvasTexture(canvas);
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        tex.repeat.set(2, 2);
+        tex.repeat.set(1.6, 1.6);
+        if (renderer && renderer.capabilities && typeof renderer.capabilities.getMaxAnisotropy === 'function') {
+            tex.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+        }
+        textureCache.kraft = tex;
         return tex;
     }
 
     /* ── THREE.JS SCENE ── */
     function setupScene(container) {
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xF9FAFB);
+        scene.background = null;
+        clock = new THREE.Clock();
 
         camera = new THREE.PerspectiveCamera(
             40, container.clientWidth / container.clientHeight, 0.1, 1000
         );
-        camera.position.set(0, 0, zoomCurrent);
-        camera.lookAt(0, 0, 0);
+        camera.position.set(0, 0.2, zoomCurrent);
+        camera.lookAt(0, 0.05, 0);
 
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance'
+        });
         renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.25));
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.0;
+        renderer.toneMappingExposure = 1.08;
+        renderer.physicallyCorrectLights = true;
+        renderer.setClearColor(0x000000, 0);
         container.appendChild(renderer.domElement);
 
         /* CSS2D label renderer */
@@ -170,41 +280,43 @@
             labelRenderer.domElement.style.top = '0';
             labelRenderer.domElement.style.left = '0';
             labelRenderer.domElement.style.pointerEvents = 'none';
+            labelRenderer.domElement.style.zIndex = '2';
             container.appendChild(labelRenderer.domElement);
         }
 
-        /* Lights — soft white from top-left */
-        const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+        /* Lights — studio setup */
+        const ambient = new THREE.HemisphereLight(0xffffff, 0xeef2ff, 0.95);
         scene.add(ambient);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.55);
-        dirLight.position.set(-5, 8, 5);
+        const dirLight = new THREE.DirectionalLight(0xfffcf5, 1.8);
+        dirLight.position.set(-5, 8, 6);
         dirLight.castShadow = true;
-        dirLight.shadow.mapSize.set(1024, 1024);
+        dirLight.shadow.mapSize.set(2048, 2048);
         dirLight.shadow.camera.near = 0.5;
-        dirLight.shadow.camera.far = 20;
-        dirLight.shadow.camera.left = -5;
-        dirLight.shadow.camera.right = 5;
-        dirLight.shadow.camera.top = 5;
-        dirLight.shadow.camera.bottom = -5;
+        dirLight.shadow.camera.far = 25;
+        dirLight.shadow.bias = -0.0002;
         scene.add(dirLight);
 
-        const fillLight = new THREE.DirectionalLight(0xF0E6D4, 0.4);
-        fillLight.position.set(4, 2, -3);
+        const fillLight = new THREE.DirectionalLight(0xffffff, 1.1);
+        fillLight.position.set(6, 3, -4);
         scene.add(fillLight);
 
-        const rimLight = new THREE.DirectionalLight(0xffffff, 0.15);
-        rimLight.position.set(0, -2, -5);
+        const rimLight = new THREE.DirectionalLight(0xe0f2fe, 0.75);
+        rimLight.position.set(-2, 4, -8);
         scene.add(rimLight);
+
+        const warmKick = new THREE.PointLight(0xffd4a3, 0.55, 12, 2);
+        warmKick.position.set(0, 1.2, 3.2);
+        scene.add(warmKick);
 
         /* Ground shadow plane */
         const groundGeo = new THREE.PlaneGeometry(20, 20);
-        const groundMat = new THREE.ShadowMaterial({ opacity: 0.06 });
-        const ground = new THREE.Mesh(groundGeo, groundMat);
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -2;
-        ground.receiveShadow = true;
-        scene.add(ground);
+        const groundMat = new THREE.ShadowMaterial({ opacity: 0.12 });
+        groundPlane = new THREE.Mesh(groundGeo, groundMat);
+        groundPlane.rotation.x = -Math.PI / 2;
+        groundPlane.position.y = -0.8;
+        groundPlane.receiveShadow = true;
+        scene.add(groundPlane);
     }
 
     /* ── MATERIALS ── */
@@ -214,8 +326,9 @@
         return new THREE.MeshStandardMaterial({
             map: tex,
             color: data.color,
-            roughness: 0.9,
-            metalness: 0.05,
+            roughness: 0.78,
+            metalness: 0.02,
+            envMapIntensity: 0.18,
             flatShading: false
         });
     }
@@ -223,10 +336,10 @@
     function createLayerMaterial(colorHex, isFlute) {
         const mat = new THREE.MeshStandardMaterial({
             color: colorHex,
-            roughness: isFlute ? 0.9 : 0.75,
+            roughness: isFlute ? 0.88 : 0.72,
             metalness: 0.0,
             transparent: true,
-            opacity: 0.88,
+            opacity: 0.92,
             flatShading: false
         });
         if (!isFlute) {
@@ -259,7 +372,10 @@
 
     /* ── BUILD BOX (entry point) ── */
     function buildBox() {
-        if (mainGroup) scene.remove(mainGroup);
+        if (mainGroup) {
+            scene.remove(mainGroup);
+            disposeObjectTree(mainGroup);
+        }
         clearLabels();
 
         mainGroup = new THREE.Group();
@@ -279,6 +395,7 @@
         }
 
         scene.add(mainGroup);
+        frameView();
     }
 
     /* ── SOLID BOX ── */
@@ -296,8 +413,8 @@
 
         // Materials for different faces (corrugated edge trick)
         const edgeMaterial = new THREE.MeshStandardMaterial({
-            color: edgeColor, roughness: 1.0, metalness: 0.0,
-            bumpMap: createCorrugatedBumpMap(), bumpScale: 0.02
+            color: edgeColor, roughness: 0.95, metalness: 0.0,
+            bumpMap: createCorrugatedBumpMap(), bumpScale: 0.015
         });
 
         // 0: right, 1: left, 2: top, 3: bottom, 4: front, 5: back
@@ -338,66 +455,58 @@
         });
 
         /* ── OPEN FLAPS ── */
-        // Calculate flap dimensions. RSC flaps meet in the middle, so length = w / 2 (mostly).
         const flapL_major = l;
         const flapW_major = w / 2;
         const flapL_minor = w - (mainPanelThickness * 2);
         const flapW_minor = l / 2;
 
-        /* Angles to match the reference image */
-        const angleFront = -0.5; // Rads, leaning outwards
+        const angleFront = -0.5; 
         const angleBack = 0.6;
         const angleLeft = -0.4;
         const angleRight = 0.45;
 
-        // Front Flap (Major)
+        // Front Flap
         const frontFlapGeo = new THREE.BoxGeometry(flapL_major, mainPanelThickness, flapW_major);
-        // Pivot point to edge
         frontFlapGeo.translate(0, mainPanelThickness / 2, flapW_major / 2);
-        const frontFlap = new THREE.Mesh(frontFlapGeo, bottomMats); // using bottom mats for top/bottom face mapping
+        const frontFlap = new THREE.Mesh(frontFlapGeo, bottomMats);
         frontFlap.castShadow = true;
         frontFlap.receiveShadow = true;
-
         const pivotFront = new THREE.Group();
         pivotFront.position.set(0, h / 2, w / 2 - mainPanelThickness);
         pivotFront.rotation.x = angleFront;
         pivotFront.add(frontFlap);
         mainGroup.add(pivotFront);
 
-        // Back Flap (Major)
+        // Back Flap
         const backFlapGeo = new THREE.BoxGeometry(flapL_major, mainPanelThickness, flapW_major);
         backFlapGeo.translate(0, mainPanelThickness / 2, -flapW_major / 2);
         const backFlap = new THREE.Mesh(backFlapGeo, bottomMats);
         backFlap.castShadow = true;
         backFlap.receiveShadow = true;
-
         const pivotBack = new THREE.Group();
         pivotBack.position.set(0, h / 2, -w / 2 + mainPanelThickness);
         pivotBack.rotation.x = angleBack;
         pivotBack.add(backFlap);
         mainGroup.add(pivotBack);
 
-        // Left Flap (Minor)
+        // Left Flap
         const leftFlapGeo = new THREE.BoxGeometry(flapW_minor, mainPanelThickness, flapL_minor);
-        // Translate anchor to left edge
         leftFlapGeo.translate(-flapW_minor / 2, mainPanelThickness / 2, 0);
         const leftFlap = new THREE.Mesh(leftFlapGeo, sideMats);
         leftFlap.castShadow = true;
         leftFlap.receiveShadow = true;
-
         const pivotLeft = new THREE.Group();
         pivotLeft.position.set(-l / 2 + mainPanelThickness, h / 2, 0);
         pivotLeft.rotation.z = angleLeft;
         pivotLeft.add(leftFlap);
         mainGroup.add(pivotLeft);
 
-        // Right Flap (Minor)
+        // Right Flap
         const rightFlapGeo = new THREE.BoxGeometry(flapW_minor, mainPanelThickness, flapL_minor);
         rightFlapGeo.translate(flapW_minor / 2, mainPanelThickness / 2, 0);
         const rightFlap = new THREE.Mesh(rightFlapGeo, sideMats);
         rightFlap.castShadow = true;
         rightFlap.receiveShadow = true;
-
         const pivotRight = new THREE.Group();
         pivotRight.position.set(l / 2 - mainPanelThickness, h / 2, 0);
         pivotRight.rotation.z = angleRight;
@@ -405,87 +514,73 @@
         mainGroup.add(pivotRight);
     }
 
-    /* Helper: Corrugated edge bump map (procedural) */
+    /* Helper: Corrugated edge bump map */
     function createCorrugatedBumpMap() {
+        if (textureCache.corrugated) return textureCache.corrugated;
         const size = 128;
         const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
-
-        // Draw horizontal stripes for fluting illusion
         ctx.fillStyle = '#111';
         ctx.fillRect(0, 0, size, size);
-
         ctx.fillStyle = '#FFF';
         for (let y = 0; y < size; y += 8) {
             ctx.fillRect(0, y, size, 4);
         }
-
         const tex = new THREE.CanvasTexture(canvas);
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
         tex.repeat.set(1, 10);
+        if (renderer && renderer.capabilities && typeof renderer.capabilities.getMaxAnisotropy === 'function') {
+            tex.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+        }
+        textureCache.corrugated = tex;
         return tex;
     }
 
     /* ── DIMENSION LINES ── */
     function buildDimensionLines(l, w, h) {
-        const lineMat = new THREE.LineBasicMaterial({ color: 0x7EAEF5, linewidth: 2 }); // Light blue, slightly thicker
-        // The reference has lines off the main body:
-        // Width on left, Height on top back, Length on right
-        const offset = 0.6; // Push it out nicely
-        const tickSize = 0.15;
+        const lineMat = new THREE.LineBasicMaterial({ color: 0xa8c8f9, transparent: true, opacity: 0.95 });
+        const maxSpan = Math.max(l, w, h);
+        const offset = Math.max(0.62, maxSpan * 0.4);
+        const tickSize = Math.max(0.12, offset * 0.22);
 
-        /* Length line (labeled 300mm on right depth side in reference) -> Z-axis depth */
         const lenPts = [
             new THREE.Vector3(l / 2 + offset, -h / 2, -w / 2),
             new THREE.Vector3(l / 2 + offset, -h / 2, w / 2)
         ];
         const lenGeo = new THREE.BufferGeometry().setFromPoints(lenPts);
         mainGroup.add(new THREE.Line(lenGeo, lineMat));
-
-        /* end ticks for length (aligned to X axis) */
         addTick(mainGroup, l / 2 + offset, -h / 2, -w / 2, tickSize, 0, 0, lineMat);
         addTick(mainGroup, l / 2 + offset, -h / 2, w / 2, tickSize, 0, 0, lineMat);
-
-        /* Length label */
         const lenLabel = makeLabel(formatDim(state.length), 'dim-label');
         if (lenLabel) {
             lenLabel.position.set(l / 2 + offset, -h / 2 - 0.2, 0);
             mainGroup.add(lenLabel);
         }
 
-        /* Width line (labeled 200mm on left front side in reference) -> X-axis width */
         const widPts = [
             new THREE.Vector3(-l / 2, -h / 2, w / 2 + offset),
             new THREE.Vector3(l / 2, -h / 2, w / 2 + offset)
         ];
         const widGeo = new THREE.BufferGeometry().setFromPoints(widPts);
         mainGroup.add(new THREE.Line(widGeo, lineMat));
-
-        /* end ticks for width (aligned to Z axis) */
         addTick(mainGroup, -l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
         addTick(mainGroup, l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
-
         const widLabel = makeLabel(formatDim(state.width), 'dim-label');
         if (widLabel) {
             widLabel.position.set(0, -h / 2 - 0.2, w / 2 + offset);
             mainGroup.add(widLabel);
         }
 
-        /* Height line (labeled 150mm poking up from back left corner in reference) -> Y-axis height */
-        // We'll put it slightly behind/left so it doesn't obscure the front flaps as much
         const hPts = [
             new THREE.Vector3(-l / 2 - offset * 0.5, -h / 2, -w / 2),
             new THREE.Vector3(-l / 2 - offset * 0.5, h / 2, -w / 2)
         ];
         const hGeo = new THREE.BufferGeometry().setFromPoints(hPts);
         mainGroup.add(new THREE.Line(hGeo, lineMat));
-
-        /* ticks for height (horizontal) */
         addTick(mainGroup, -l / 2 - offset * 0.5, -h / 2, -w / 2, tickSize, 0, 0, lineMat);
         addTick(mainGroup, -l / 2 - offset * 0.5, h / 2, -w / 2, tickSize, 0, 0, lineMat);
-
         const hLabel = makeLabel(formatDim(state.height), 'dim-label dim-label-h');
         if (hLabel) {
             hLabel.position.set(-l / 2 - offset * 0.5 - 0.2, 0, -w / 2);
@@ -513,10 +608,7 @@
         const data = PLY_DATA[ply];
         const layers = data.layerCount;
         const gap = 0.32;
-        const layerColors = [
-            0xC4A86B, 0xD4C49A, 0xB89A5A,
-            0xD4C49A, 0xB89A5A, 0xD4C49A, 0xA8824A
-        ];
+        const layerColors = [0xC4A86B, 0xD4C49A, 0xB89A5A, 0xD4C49A, 0xB89A5A, 0xD4C49A, 0xA8824A];
 
         for (let i = 0; i < layers; i++) {
             const isFlute = i % 2 === 1;
@@ -524,11 +616,8 @@
             const yPos = (i - (layers - 1) / 2) * gap;
 
             if (isFlute) {
-                /* Corrugated wave geometry */
-                buildFluteLayer(l * 0.88, layerH, w * 0.68, yPos,
-                    layerColors[i] || 0xD4C49A);
+                buildFluteLayer(l * 0.88, layerH, w * 0.68, yPos, layerColors[i] || 0xD4C49A);
             } else {
-                /* Flat liner panel */
                 const geo = new THREE.BoxGeometry(l * 0.88, layerH, w * 0.68);
                 const mat = createLayerMaterial(layerColors[i] || 0xC4A86B, false);
                 const mesh = new THREE.Mesh(geo, mat);
@@ -537,8 +626,6 @@
                 mesh.receiveShadow = true;
                 mainGroup.add(mesh);
             }
-
-            /* Layer label */
             const name = data.layerNames[i] || ('Layer ' + (i + 1));
             const label = makeLabel(name, 'layer-label');
             if (label) {
@@ -548,14 +635,10 @@
         }
     }
 
-    /* ── FLUTE WAVE GEOMETRY ── */
     function buildFluteLayer(layerW, layerH, layerD, yPos, color) {
-        /* Create a visually corrugated surface using a shape extruded along Z */
         const segments = 30;
         const amplitude = layerH * 0.4;
         const frequency = 8;
-
-        /* Create top surface vertices */
         const geo = new THREE.BufferGeometry();
         const vertices = [];
         const indices = [];
@@ -574,7 +657,6 @@
                 normals.push(0, 1, 0);
             }
         }
-
         for (let j = 0; j < rows; j++) {
             for (let i = 0; i < cols; i++) {
                 const a = j * (cols + 1) + i;
@@ -585,39 +667,29 @@
                 indices.push(b, d, c);
             }
         }
-
         geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
         geo.setIndex(indices);
         geo.computeVertexNormals();
-
         const mat = new THREE.MeshStandardMaterial({
-            color: color,
-            roughness: 0.9,
-            metalness: 0.0,
-            transparent: true,
-            opacity: 0.85,
-            side: THREE.DoubleSide
+            color: color, roughness: 0.9, metalness: 0.0, transparent: true, opacity: 0.85, side: THREE.DoubleSide
         });
-
         const mesh = new THREE.Mesh(geo, mat);
         mesh.castShadow = true;
         mainGroup.add(mesh);
     }
 
-    /* ── INTERACTION (drag rotate + scroll zoom) ── */
     function setupControls() {
         const container = document.getElementById('boxViewer');
-
-        /* Drag to rotate */
         container.addEventListener('pointerdown', (e) => {
             isDragging = true;
+            lastInteractionAt = performance.now();
             previousMouse.x = e.clientX;
             previousMouse.y = e.clientY;
         });
-
         window.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
+            lastInteractionAt = performance.now();
             const dx = e.clientX - previousMouse.x;
             const dy = e.clientY - previousMouse.y;
             rotationTarget.y += dx * 0.007;
@@ -626,58 +698,39 @@
             previousMouse.x = e.clientX;
             previousMouse.y = e.clientY;
         });
-
         window.addEventListener('pointerup', () => {
             isDragging = false;
+            lastInteractionAt = performance.now();
         });
-
-        /* Scroll to zoom */
         container.addEventListener('wheel', (e) => {
             e.preventDefault();
+            lastInteractionAt = performance.now();
             zoomTarget += e.deltaY * 0.005;
             zoomTarget = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomTarget));
         }, { passive: false });
-
-        /* Touch pinch zoom */
-        let lastTouchDist = 0;
-        container.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                lastTouchDist = Math.sqrt(dx * dx + dy * dy);
-            }
-        }, { passive: true });
-
-        container.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const delta = lastTouchDist - dist;
-                zoomTarget += delta * 0.02;
-                zoomTarget = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomTarget));
-                lastTouchDist = dist;
-            }
-        }, { passive: true });
     }
 
-    /* ── ANIMATION LOOP ── */
     function animate() {
-        requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate);
+        const delta = Math.min(clock ? clock.getDelta() : 1 / 60, 0.05);
+        const smoothing = 1 - Math.pow(1 - INERTIA, delta * 60);
+        const zoomSmoothing = 1 - Math.pow(1 - 0.08, delta * 60);
+        const now = performance.now();
+        const shouldAutoRotate = !isDragging && (now - lastInteractionAt) > AUTO_ROTATE_DELAY;
 
-        /* smooth rotation */
-        rotationCurrent.x += (rotationTarget.x - rotationCurrent.x) * INERTIA;
-        rotationCurrent.y += (rotationTarget.y - rotationCurrent.y) * INERTIA;
+        if (shouldAutoRotate) rotationTarget.y += AUTO_ROTATE_SPEED * delta;
+        rotationCurrent.x += (rotationTarget.x - rotationCurrent.x) * smoothing;
+        rotationCurrent.y += (rotationTarget.y - rotationCurrent.y) * smoothing;
 
         if (mainGroup) {
             mainGroup.rotation.x = rotationCurrent.x;
             mainGroup.rotation.y = rotationCurrent.y;
+            mainGroup.position.y = shouldAutoRotate ? Math.sin(now * 0.001 * FLOAT_SPEED) * FLOAT_AMPLITUDE : 0;
         }
 
-        /* smooth zoom */
-        zoomCurrent += (zoomTarget - zoomCurrent) * 0.08;
-        camera.position.set(0, 0, zoomCurrent);
-        camera.lookAt(0, 0, 0);
+        zoomCurrent += (zoomTarget - zoomCurrent) * zoomSmoothing;
+        camera.position.set(0, 0.2, zoomCurrent);
+        camera.lookAt(0, 0.05, 0);
 
         renderer.render(scene, camera);
         if (labelRenderer) labelRenderer.render(scene, camera);
@@ -689,26 +742,19 @@
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(container.clientWidth, container.clientHeight);
-        if (labelRenderer) {
-            labelRenderer.setSize(container.clientWidth, container.clientHeight);
-        }
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.25));
+        if (labelRenderer) labelRenderer.setSize(container.clientWidth, container.clientHeight);
+        frameView();
     }
 
-    /* ── SLIDERS ── */
     function setupSliders() {
-        const sliders = {
-            sliderLength: { key: 'length', display: 'valLength' },
-            sliderWidth: { key: 'width', display: 'valWidth' },
-            sliderHeight: { key: 'height', display: 'valHeight' }
-        };
-
-        Object.entries(sliders).forEach(([id, cfg]) => {
+        const sliders = { sliderLength: 'length', sliderWidth: 'width', sliderHeight: 'height' };
+        Object.entries(sliders).forEach(([id, key]) => {
             const el = document.getElementById(id);
             if (!el) return;
             el.addEventListener('input', () => {
-                const val = parseInt(el.value);
-                state[cfg.key] = val;
-                updateSliderDisplay(cfg.display, val);
+                state[key] = parseInt(el.value);
+                updateSliderDisplay(id === 'sliderLength' ? 'valLength' : id === 'sliderWidth' ? 'valWidth' : 'valHeight', state[key]);
                 buildBox();
                 updateSpecs();
             });
@@ -718,26 +764,17 @@
     function updateSliderDisplay(id, val) {
         const el = document.getElementById(id);
         if (!el) return;
-        if (state.unit === 'in') {
-            el.textContent = (val / 25.4).toFixed(1);
-        } else {
-            el.textContent = val;
-        }
+        el.textContent = state.unit === 'in' ? (val / 25.4).toFixed(1) : val;
     }
 
     function updateAllDisplays() {
         updateSliderDisplay('valLength', state.length);
         updateSliderDisplay('valWidth', state.width);
         updateSliderDisplay('valHeight', state.height);
-
-        const labels = document.querySelectorAll('.cfg-unit-label');
-        labels.forEach(l => l.textContent = state.unit);
-
-        /* rebuild box to update dimension labels */
+        document.querySelectorAll('.cfg-unit-label').forEach(l => l.textContent = state.unit);
         buildBox();
     }
 
-    /* ── PLY BUTTONS ── */
     function setupPlyButtons() {
         const buttons = document.querySelectorAll('.cfg-ply');
         buttons.forEach(btn => {
@@ -751,7 +788,6 @@
         });
     }
 
-    /* ── UNIT TOGGLE ── */
     function setupUnitToggle() {
         const buttons = document.querySelectorAll('.cfg-unit[data-unit]');
         buttons.forEach(btn => {
@@ -764,44 +800,27 @@
         });
     }
 
-    /* ── SPECS + STRENGTH METER ── */
     function updateSpecs() {
         const data = PLY_DATA[state.ply];
         const el = (id) => document.getElementById(id);
-
         if (el('specThickness')) el('specThickness').textContent = data.thickness + ' mm';
         if (el('specCapacity')) el('specCapacity').textContent = data.capacity;
         if (el('specLayers')) el('specLayers').textContent = data.layers;
         if (el('specRecommendedUse')) el('specRecommendedUse').textContent = data.recommendedUse;
 
-        /* Strength meter calculation */
-        /* Base from ply, adjust for size — larger boxes = proportionally weaker */
         const volume = state.length * state.width * state.height;
-        const maxVolume = 800 * 600 * 600; // max slider values
-        const sizePenalty = (volume / maxVolume) * 25;
+        const sizePenalty = (volume / (800 * 600 * 600)) * 25;
         let strength = Math.max(5, Math.min(100, data.strengthScore - sizePenalty));
+        let label, color;
+        if (strength <= 33) { label = 'Low'; color = '#EF4444'; }
+        else if (strength <= 66) { label = 'Medium'; color = '#F59E0B'; }
+        else { label = 'High'; color = '#22C55E'; }
 
-        let strengthLabel, strengthColor;
-        if (strength <= 33) {
-            strengthLabel = 'Low';
-            strengthColor = '#EF4444';
-        } else if (strength <= 66) {
-            strengthLabel = 'Medium';
-            strengthColor = '#F59E0B';
-        } else {
-            strengthLabel = 'High';
-            strengthColor = '#22C55E';
-        }
-
-        if (el('specStrengthLabel')) el('specStrengthLabel').textContent = strengthLabel;
+        if (el('specStrengthLabel')) el('specStrengthLabel').textContent = label;
         const bar = el('specStrengthFill');
-        if (bar) {
-            bar.style.width = strength + '%';
-            bar.style.background = strengthColor;
-        }
+        if (bar) { bar.style.width = strength + '%'; bar.style.background = color; }
     }
 
-    /* ── EXPLODED VIEW ── */
     function setupExplode() {
         const btn = document.getElementById('btnExplode');
         if (!btn) return;
@@ -814,134 +833,143 @@
         });
     }
 
-    /* ── RESET ── */
     function setupReset() {
         const btn = document.getElementById('btnReset');
         if (!btn) return;
         btn.addEventListener('click', () => {
-            rotationTarget.x = -0.3;
-            rotationTarget.y = 0.5;
-            zoomTarget = 5;
-            state.exploded = false;
-            const explodeBtn = document.getElementById('btnExplode');
-            if (explodeBtn) {
-                explodeBtn.classList.remove('active');
-                const span = explodeBtn.querySelector('span');
-                if (span) span.textContent = 'Show Layers';
+            rotationTarget.x = -0.3; rotationTarget.y = 0.5;
+            lastInteractionAt = 0; state.exploded = false;
+            const exBtn = document.getElementById('btnExplode');
+            if (exBtn) {
+                exBtn.classList.remove('active');
+                const s = exBtn.querySelector('span');
+                if (s) s.textContent = 'Show Layers';
             }
             buildBox();
         });
     }
 
-    /* ── SMART SUGGESTION ── */
     function setupSuggestion() {
         const btn = document.getElementById('btnSuggest');
         if (!btn) return;
-
         btn.addEventListener('click', () => {
             const weight = parseFloat(document.getElementById('productWeight').value);
             const shipping = document.getElementById('shippingType').value;
             const result = document.getElementById('suggestionResult');
-
             if (!weight || !shipping) {
-                result.innerHTML = '<p style="color: var(--clr-text-secondary)">Please enter both weight and shipping type.</p>';
-                result.style.display = 'block';
-                return;
+                result.innerHTML = '<p>Please enter weight and shipping type.</p>';
+                result.style.display = 'block'; return;
             }
+            let rPly, rSize, rMargin, warning = '';
+            if (weight <= 5) { rPly = '3-Ply'; rSize = '10x8x6 in'; rMargin = 'Safe'; }
+            else if (weight <= 15) { rPly = shipping === 'longdist' ? '5-Ply' : '3-Ply'; rSize = '15x10x10 in'; rMargin = 'Balanced'; }
+            else if (weight <= 40) { rPly = '5-Ply'; rSize = '18x12x12 in'; rMargin = 'Heavy Duty'; }
+            else { rPly = '7-Ply'; rSize = '22x22x30 in'; rMargin = 'Export Grade'; }
 
-            let recPly, recSize, margin, warning = '';
-
-            if (weight <= 5) {
-                recPly = '3-Ply (Single Wall)';
-                recSize = '10 × 8 × 6 inches';
-                margin = 'Good safety margin';
-            } else if (weight <= 15) {
-                recPly = shipping === 'longdist' ? '5-Ply (Double Wall)' : '3-Ply (Single Wall)';
-                recSize = '15 × 10 × 10 inches';
-                margin = shipping === 'longdist' ? 'Extra protection for long distance' : 'Adequate for standard courier';
-            } else if (weight <= 40) {
-                recPly = '5-Ply (Double Wall)';
-                recSize = '18 × 12 × 12 inches';
-                margin = 'Suitable for heavy items';
-            } else {
-                recPly = '7-Ply (Triple Wall)';
-                recSize = '22 × 22 × 30 inches';
-                margin = 'Industrial-grade protection';
-            }
-
-            const currentMaxWeight = state.ply === 3 ? 15 : state.ply === 5 ? 40 : 200;
-            if (weight > currentMaxWeight) {
-                warning = `<p class="cfg-warning">⚠️ Selected ${state.ply}-Ply may not support ${weight} kg. Consider upgrading.</p>`;
-            }
-
-            result.innerHTML = `
-                <h4>✅ Recommendation</h4>
-                <p><strong>Suggested Ply:</strong> ${recPly}</p>
-                <p><strong>Suggested Size:</strong> ${recSize}</p>
-                <p><strong>Safety Margin:</strong> ${margin}</p>
-                ${warning}
-            `;
+            const maxW = state.ply === 3 ? 15 : state.ply === 5 ? 40 : 200;
+            if (weight > maxW) warning = `<p style="color:#DC2626">⚠️ Selection may be weak for ${weight}kg.</p>`;
+            result.innerHTML = `<h4>✅ Recommendation</h4><p>Ply: ${rPly}</p><p>Size: ${rSize}</p><p>Note: ${rMargin}</p>${warning}`;
             result.style.display = 'block';
         });
     }
 
-    /* ── WHATSAPP QUOTE ── */
     function setupWhatsAppQuote() {
         const btn = document.getElementById('btnQuoteWhatsApp');
         if (!btn) return;
-
         btn.addEventListener('click', () => {
-            const name = (document.getElementById('custName').value || '').trim();
-            const phone = (document.getElementById('custPhone').value || '').trim();
-
-            if (!name || !phone) {
-                alert('Please fill in your Name and Mobile Number to request a quote.');
-                return;
-            }
-
-            const company = (document.getElementById('custCompany').value || '').trim();
-            const qty = (document.getElementById('custQty').value || '').trim();
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            if (!name || !phone) { alert('Please enter Name and Mobile.'); return; }
+            const company = document.getElementById('custCompany').value.trim();
+            const qty = document.getElementById('custQty').value.trim();
             const material = document.getElementById('custMaterial').value;
             const printing = document.getElementById('custPrinting').value;
             const plyData = PLY_DATA[state.ply];
-
-            const today = new Date();
-            const dateStr = today.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const timeStr = today.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-
             const sizeStr = `${state.length} × ${state.width} × ${state.height} mm`;
+            const details = [
+                'Box Type: Corrugated Box (RSC)',
+                `Source Page: 3D Configurator`,
+                `Dimensions: ${sizeStr}`,
+                `Ply: ${state.ply}-Ply (${plyData.label})`,
+                `Wall Thickness: ${plyData.thickness} mm`,
+                `Weight Capacity: ${plyData.capacity}`,
+                `Material: ${material}`,
+                `Printing: ${printing}`,
+                `Quantity Required: ${qty || '—'} pcs`
+            ];
+            const message = buildLeadMessage({
+                requestType: '3D Configurator Quote',
+                source: '3D Configurator',
+                name,
+                phone,
+                company,
+                details,
+                notes: 'Best for instant price discussion and custom sizing.',
+                closing: 'Please share quotation and delivery timeline for the configured box above.'
+            });
 
-            let msg = `*Quotation Request – Corrugated Box*\n`;
-            msg += `Date: ${dateStr}  Time: ${timeStr}\n\n`;
-
-            msg += `*Customer Details*\n`;
-            msg += `• Name: ${name}\n`;
-            msg += `• Mobile: ${phone}\n`;
-            msg += `• Company (if any): ${company || '—'}\n\n`;
-
-            msg += `*Box Specification*\n`;
-            msg += `• Box Type: Corrugated Box (RSC)\n`;
-            msg += `• Ply: ${state.ply}-Ply (${plyData.label.split('(')[1]}\n`;
-            msg += `• Size (L × W × H): ${sizeStr}\n`;
-            msg += `• Wall Thickness: ${plyData.thickness} mm\n`;
-            msg += `• Weight Capacity: ${plyData.capacity}\n`;
-            msg += `• Material: ${material}\n`;
-            msg += `• Printing: ${printing}\n`;
-            msg += `• Quantity Required: ${qty || '—'} pcs\n\n`;
-
-            msg += `Please share quotation and delivery timeline for the above specification.\n`;
-            msg += `Thank you.`;
-
-            const waUrl = `https://wa.me/919420996107?text=${encodeURIComponent(msg)}`;
-            window.open(waUrl, '_blank');
+            window.open(buildWhatsAppUrl(message), '_blank', 'noopener');
         });
     }
 
-    /* ── BOOT ── */
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
+    function setupDownloadSpec() {
+        const ctaBox = document.querySelector('.cfg-cta-box');
+        if (!ctaBox) return;
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline btn-lg';
+        btn.style.width = '100%';
+        btn.style.marginTop = '0.5rem';
+        btn.textContent = 'Download Specification Sheet';
+        btn.addEventListener('click', () => {
+            const plyData = PLY_DATA[state.ply];
+            const site = getSiteConfig();
+            const content = `ARTI ENTERPRISES - BOX SPECIFICATION SHEET\n` +
+                `-------------------------------------------\n` +
+                `Product: Corrugated Box (RSC)\n` +
+                `Dimensions: ${state.length} x ${state.width} x ${state.height} ${state.unit}\n` +
+                `Ply Type: ${plyData.label}\n` +
+                `Wall Thickness: ${plyData.thickness} mm\n` +
+                `Weight Capacity: ${plyData.capacity}\n` +
+                `Recommended Use: ${plyData.recommendedUse}\n` +
+                `-------------------------------------------\n` +
+                `Generated on: ${new Date().toLocaleDateString()}\n` +
+                `Contact: ${site.phoneDisplay} (WhatsApp)`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Arti-Box-Spec-${state.length}x${state.width}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+        ctaBox.appendChild(btn);
     }
 
+    function frameView() {
+        if (!mainGroup || !camera) return;
+        const bounds = new THREE.Box3().setFromObject(mainGroup);
+        const size = bounds.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z, 0.5);
+        const dist = maxDim / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov * 0.5))) * 1.5;
+        zoomTarget = THREE.MathUtils.clamp(dist, ZOOM_MIN, ZOOM_MAX);
+        if (groundPlane) groundPlane.position.y = bounds.min.y - 0.08;
+    }
+
+    function disposeMaterial(mat) {
+        if (!mat) return;
+        if (Array.isArray(mat)) { mat.forEach(disposeMaterial); return; }
+        if (mat.map && mat.map !== textureCache.kraft) mat.map.dispose();
+        if (mat.bumpMap && mat.bumpMap !== textureCache.corrugated) mat.bumpMap.dispose();
+        mat.dispose();
+    }
+
+    function disposeObjectTree(obj) {
+        obj.traverse((child) => {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) disposeMaterial(child.material);
+        });
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
 })();

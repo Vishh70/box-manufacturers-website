@@ -1,0 +1,62 @@
+{
+  "businessName": "ARTI ENTERPRISES",
+  "catalogPriceMode": "Price on request",
+  "items": [
+    {
+      "title": "3 Ply Corrugated Box",
+      "price": "Price on request",
+      "description": "Lightweight corrugated shipping box for e-commerce, courier, and retail packaging. Custom sizes available. MOQ from 100 pieces.",
+      "image": "images/product-3ply.png",
+      "buyerPrompt": "Please share box size, quantity, printing requirement, and delivery location for quotation."
+    },
+    {
+      "title": "5 Ply Heavy Duty Box",
+      "price": "Price on request",
+      "description": "Heavy-duty corrugated box for fragile products, machinery parts, and medium-weight shipments. Bulk pricing available.",
+      "image": "images/product-5ply.png",
+      "buyerPrompt": "Please share box size, quantity, printing requirement, and delivery location for quotation."
+    },
+    {
+      "title": "7 Ply Industrial Box",
+      "price": "Price on request",
+      "description": "Industrial-strength packaging for heavy goods, exports, and high-protection transport applications.",
+      "image": "images/product-7ply.png",
+      "buyerPrompt": "Please share box size, quantity, printing requirement, and delivery location for quotation."
+    },
+    {
+      "title": "E-Commerce Mailer Box",
+      "price": "Price on request",
+      "description": "Compact corrugated mailer box for online sellers and branded shipping. Good for apparel, cosmetics, and small products.",
+      "image": "images/product-ecommerce.png",
+      "buyerPrompt": "Please share box size, quantity, printing requirement, and delivery location for quotation."
+    },
+    {
+      "title": "Die-Cut Custom Box",
+      "price": "Price on request",
+      "description": "Custom-shape corrugated packaging designed for product fit, presentation, and protection. Available in custom sizes and structures.",
+      "image": "images/product-diecut.png",
+      "buyerPrompt": "Please share box size, quantity, printing requirement, and delivery location for quotation."
+    },
+    {
+      "title": "Custom Printed Box",
+      "price": "Price on request",
+      "description": "Branded corrugated boxes with custom printing for retail packaging, shipping, and promotional packaging requirements.",
+      "image": "images/product-printed.png",
+      "buyerPrompt": "Please share box size, quantity, printing requirement, and delivery location for quotation."
+    },
+    {
+      "title": "Food Grade Box",
+      "price": "Price on request",
+      "description": "Corrugated packaging suitable for food-related products with custom ventilation, size, and bulk supply options.",
+      "image": "images/product-foodgrade.png",
+      "buyerPrompt": "Please share box size, quantity, printing requirement, and delivery location for quotation."
+    },
+    {
+      "title": "5 Ply Export Quality Box",
+      "price": "Price on request",
+      "description": "Strong export packaging for larger shipments and long-distance handling. Designed for better stacking and product safety.",
+      "image": "images/product-export.png",
+      "buyerPrompt": "Please share box size, quantity, printing requirement, and delivery location for quotation."
+    }
+  ]
+}
