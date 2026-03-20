@@ -2057,3 +2057,87 @@ button {
     grid-template-columns: 1fr;
   }
 }
+/* ---- WhatsApp Inquiry Hub ---- */
+.inquiry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.inquiry-card {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.4s var(--ease-smooth);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.inquiry-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--clr-accent);
+  box-shadow: var(--shadow-lg);
+}
+
+.inquiry-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  background: var(--clr-bg-secondary);
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-inline: auto;
+  transition: background 0.3s ease;
+}
+
+.inquiry-card:hover .inquiry-icon {
+  background: var(--clr-accent-light);
+}
+
+.inquiry-card h3 {
+  font-family: var(--ff-heading);
+  font-size: 1.15rem;
+  font-weight: var(--fw-bold);
+  margin-bottom: 0.5rem;
+  color: var(--clr-text);
+}
+
+.inquiry-card p {
+  font-size: 0.9rem;
+  color: var(--clr-text-secondary);
+  line-height: 1.6;
+  flex-grow: 1;
+  margin-bottom: 1.5rem;
+}
+
+.inquiry-btn {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--clr-accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.inquiry-card:hover .inquiry-btn {
+  color: var(--clr-accent-hover);
+}
+
+/* Responsive fixes */
+@media (max-width: 768px) {
+  .inquiry-grid {
+    grid-template-columns: 1fr;
+  }
+}
