@@ -3,7 +3,7 @@ window.ARTI_SITE = {
   businessCategory: 'Packaging Supplier',
   businessAbout: 'Corrugated box manufacturer in Pune for 3 Ply, 5 Ply, 7 Ply, die-cut, printed, and custom packaging solutions. Bulk and custom orders welcome.',
   businessDescription: 'Premium corrugated box manufacturer in Pune. We supply 3 Ply, 5 Ply, 7 Ply, die-cut, custom printed, food-grade, export-quality, and e-commerce corrugated boxes for bulk and custom orders.',
-  website: 'https://artienterprises.com',
+  website: 'https://arti-enterprises.vercel.app',
   addressDisplay: 'GAT NO 1297, Chikhali, PANCHAWATI HOUSING SOC NO 3, Pimpri Chinchwad, Pune, Maharashtra 411062',
   businessHoursDisplay: 'Monday to Saturday: 9:00 AM to 7:00 PM | Sunday: Closed',
   catalogPriceLabel: 'Price on request',

@@ -11,7 +11,7 @@ Use these exact values in the WhatsApp Business profile for `ARTI ENTERPRISES`.
 - Description:
   `Premium corrugated box manufacturer in Pune. We supply 3 Ply, 5 Ply, 7 Ply, die-cut, custom printed, food-grade, export-quality, and e-commerce corrugated boxes for bulk and custom orders.`
 - Email: `artienterprises17@rediffmail.com`
-- Website: `https://artienterprises.com`
+- Website: `https://arti-enterprises.vercel.app`
 - Address:
   `GAT NO 1297, Chikhali, PANCHAWATI HOUSING SOC NO 3, Pimpri Chinchwad, Pune, Maharashtra 411062`
 - Hours:

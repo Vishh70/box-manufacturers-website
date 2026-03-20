@@ -40,7 +40,7 @@ Use these existing site images while creating WhatsApp catalog items:
 - Keep all public business details aligned with the website:
   - Number: `+91 9420996107`
   - Email: `artienterprises17@rediffmail.com`
-  - Website: `https://artienterprises.com`
+  - Website: `https://arti-enterprises.vercel.app`
   - Address: `GAT NO 1297, Chikhali, PANCHAWATI HOUSING SOC NO 3, Pimpri Chinchwad, Pune, Maharashtra 411062`
 
 ## Scope Limits
