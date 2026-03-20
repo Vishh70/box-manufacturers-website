@@ -1,8 +1,11 @@
-/* ============================================
-   3D Box Configurator — Premium Edition
-   Realistic Three.js Scene + Exploded View
-   + Dimension Lines + Zoom + Strength Meter
-   ============================================ */
+/**
+ * @file 3D Box Configurator — Premium Edition
+ * @description Interactive Three.js configurator with exploded view,
+ *              dimension lines, zoom, strength meter, and GSM selection.
+ * @author ARTI ENTERPRISES
+ * @version 1.2.0
+ * @requires THREE.js r128, CSS2DRenderer
+ */
 
 (function () {
     'use strict';
@@ -44,65 +47,18 @@
         }
     };
 
-    function getSiteConfig() {
-        if (window.ARTI_SITE_UTILS && typeof window.ARTI_SITE_UTILS.getSiteConfig === 'function') {
-            return window.ARTI_SITE_UTILS.getSiteConfig();
-        }
-        return window.ARTI_SITE || {
-            phoneDisplay: '+91 9420996107',
-            whatsappBase: 'https://wa.me/919420996107',
-            whatsappGreeting: 'Hello ARTI ENTERPRISES'
-        };
-    }
-
-    function buildLeadMessage(payload) {
-        if (window.ARTI_SITE_UTILS && typeof window.ARTI_SITE_UTILS.buildLeadMessage === 'function') {
-            return window.ARTI_SITE_UTILS.buildLeadMessage(payload);
-        }
-        const site = getSiteConfig();
-        const safePayload = payload || {};
-        const details = Array.isArray(safePayload.details) ? safePayload.details.filter(Boolean) : [];
-        const lines = [
-            '*Quotation Request - ARTI ENTERPRISES*',
-            '',
-            '*Request Details*',
-            `- Request Type: ${safePayload.requestType || 'Quote Request'}`,
-            `- Source: ${safePayload.source || 'Website'}`
-        ];
-
-        if (safePayload.name || safePayload.phone || safePayload.company) {
-            lines.push('');
-            lines.push('*Customer Details*');
-            if (safePayload.name) lines.push(`- Name: ${safePayload.name}`);
-            if (safePayload.phone) lines.push(`- Mobile: ${safePayload.phone}`);
-            if (safePayload.company) lines.push(`- Company: ${safePayload.company}`);
-        }
-
-        if (details.length) {
-            lines.push('');
-            lines.push('*Requirements*');
-            details.forEach((detail) => lines.push(`- ${detail}`));
-        }
-
-        lines.push('');
-        lines.push(safePayload.closing || 'Please share quotation and delivery timeline for the above requirement.');
-        lines.push('Thank you.');
-
-        return lines.join('\n') || site.whatsappGreeting;
-    }
-
-    function buildWhatsAppUrl(message) {
-        if (window.ARTI_SITE_UTILS && typeof window.ARTI_SITE_UTILS.buildWhatsAppUrl === 'function') {
-            return window.ARTI_SITE_UTILS.buildWhatsAppUrl(message);
-        }
-        return `${getSiteConfig().whatsappBase}?text=${encodeURIComponent(message)}`;
-    }
+    const { 
+        getSiteConfig = () => window.ARTI_SITE || {},
+        buildLeadMessage = () => 'Quotation Request',
+        buildWhatsAppUrl = (msg) => `https://wa.me/919420996107?text=${encodeURIComponent(msg)}`
+    } = window.ARTI_SITE_UTILS || {};
 
     /* ── STATE ── */
     let state = {
         length: 300,
         width: 200,
         height: 150,
+        gsm: 150,
         ply: 3,
         unit: 'mm',
         exploded: false
@@ -748,14 +704,22 @@
     }
 
     function setupSliders() {
-        const sliders = { sliderLength: 'length', sliderWidth: 'width', sliderHeight: 'height' };
+        const sliders = { 
+            sliderLength: 'length', 
+            sliderWidth: 'width', 
+            sliderHeight: 'height',
+            sliderGsm: 'gsm'
+        };
         Object.entries(sliders).forEach(([id, key]) => {
             const el = document.getElementById(id);
             if (!el) return;
             el.addEventListener('input', () => {
                 state[key] = parseInt(el.value);
-                updateSliderDisplay(id === 'sliderLength' ? 'valLength' : id === 'sliderWidth' ? 'valWidth' : 'valHeight', state[key]);
-                buildBox();
+                const displayId = id === 'sliderLength' ? 'valLength' : 
+                                 id === 'sliderWidth' ? 'valWidth' : 
+                                 id === 'sliderHeight' ? 'valHeight' : 'valGsm';
+                updateSliderDisplay(displayId, state[key]);
+                if (key !== 'gsm') buildBox();
                 updateSpecs();
             });
         });
@@ -764,6 +728,11 @@
     function updateSliderDisplay(id, val) {
         const el = document.getElementById(id);
         if (!el) return;
+        // GSM is always displayed as-is (no unit conversion)
+        if (id === 'valGsm') {
+            el.textContent = val;
+            return;
+        }
         el.textContent = state.unit === 'in' ? (val / 25.4).toFixed(1) : val;
     }
 
@@ -771,6 +740,7 @@
         updateSliderDisplay('valLength', state.length);
         updateSliderDisplay('valWidth', state.width);
         updateSliderDisplay('valHeight', state.height);
+        updateSliderDisplay('valGsm', state.gsm);
         document.querySelectorAll('.cfg-unit-label').forEach(l => l.textContent = state.unit);
         buildBox();
     }
@@ -891,6 +861,7 @@
                 `Source Page: 3D Configurator`,
                 `Dimensions: ${sizeStr}`,
                 `Ply: ${state.ply}-Ply (${plyData.label})`,
+                `Paper Quality: ${state.gsm} GSM`,
                 `Wall Thickness: ${plyData.thickness} mm`,
                 `Weight Capacity: ${plyData.capacity}`,
                 `Material: ${material}`,
@@ -915,32 +886,37 @@
     function setupDownloadSpec() {
         const ctaBox = document.querySelector('.cfg-cta-box');
         if (!ctaBox) return;
+        // Guard: prevent duplicate button creation
+        if (ctaBox.querySelector('.btn-download-spec')) return;
         const btn = document.createElement('button');
-        btn.className = 'btn btn-outline btn-lg';
+        btn.className = 'btn btn-outline btn-lg btn-download-spec';
         btn.style.width = '100%';
         btn.style.marginTop = '0.5rem';
         btn.textContent = 'Download Specification Sheet';
         btn.addEventListener('click', () => {
             const plyData = PLY_DATA[state.ply];
             const site = getSiteConfig();
-            const content = `ARTI ENTERPRISES - BOX SPECIFICATION SHEET\n` +
-                `-------------------------------------------\n` +
-                `Product: Corrugated Box (RSC)\n` +
-                `Dimensions: ${state.length} x ${state.width} x ${state.height} ${state.unit}\n` +
-                `Ply Type: ${plyData.label}\n` +
-                `Wall Thickness: ${plyData.thickness} mm\n` +
-                `Weight Capacity: ${plyData.capacity}\n` +
-                `Recommended Use: ${plyData.recommendedUse}\n` +
-                `-------------------------------------------\n` +
-                `Generated on: ${new Date().toLocaleDateString()}\n` +
-                `Contact: ${site.phoneDisplay} (WhatsApp)`;
+            const content = [
+                'ARTI ENTERPRISES - BOX SPECIFICATION SHEET',
+                '-------------------------------------------',
+                'Product: Corrugated Box (RSC)',
+                `Dimensions: ${state.length} x ${state.width} x ${state.height} ${state.unit}`,
+                `Ply Type: ${plyData.label}`,
+                `Paper Quality: ${state.gsm} GSM`,
+                `Wall Thickness: ${plyData.thickness} mm`,
+                `Weight Capacity: ${plyData.capacity}`,
+                `Recommended Use: ${plyData.recommendedUse}`,
+                '-------------------------------------------',
+                `Generated on: ${new Date().toLocaleDateString()}`,
+                `Contact: ${site.phoneDisplay} (WhatsApp)`
+            ].join('\n');
             const blob = new Blob([content], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `Arti-Box-Spec-${state.length}x${state.width}.txt`;
             a.click();
-            URL.revokeObjectURL(url);
+            setTimeout(() => URL.revokeObjectURL(url), 100);
         });
         ctaBox.appendChild(btn);
     }

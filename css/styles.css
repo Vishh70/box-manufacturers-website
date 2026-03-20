@@ -884,6 +884,13 @@ button {
   margin-bottom: 0.5rem;
 }
 
+.product-card-title a {
+  display: inline-block;
+  padding: 0.5rem 0;
+  margin: -0.5rem 0;
+  color: inherit;
+}
+
 .product-card-specs {
   display: flex;
   flex-wrap: wrap;
@@ -1185,10 +1192,10 @@ button {
 /* ---- WhatsApp Float ---- */
 .wa-float {
   position: fixed;
-  bottom: 140px;
-  /* High enough to clear closed Tidio AND its label */
-  right: 28px;
-  z-index: 999;
+  left: 20px;
+  right: auto;
+  bottom: 20px;
+  z-index: 1000;
   width: 56px;
   height: 56px;
   background: #25D366;
@@ -1602,6 +1609,17 @@ button {
   color: var(--clr-text);
   margin-bottom: 0.5rem;
   line-height: 1.4;
+  position: relative;
+}
+
+.blog-card-title a::after {
+  content: "";
+  position: absolute;
+  top: -120px; /* Cover image area roughly */
+  left: -1.5rem; /* Cover body padding */
+  right: -1.5rem;
+  bottom: -4rem; /* Cover meta area */
+  z-index: 1;
 }
 
 .blog-card-title a:hover {
@@ -1994,6 +2012,7 @@ button {
     justify-content: center;
     padding: 2rem;
     transition: right var(--transition-base);
+    z-index: 2147483647; /* Ensure it stays above EVERYTHING including Tidio */
     box-shadow: var(--shadow-xl);
     border-left: 1px solid var(--clr-border);
   }
@@ -2026,6 +2045,7 @@ button {
 
   .hero-3d-container {
     height: 280px;
+    margin-bottom: 60px;
   }
 
   .hero-3d-label {
@@ -2139,5 +2159,22 @@ button {
 @media (max-width: 768px) {
   .inquiry-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Mobile Specific Fixes ---- */
+@media (max-width: 600px) {
+  .inquiry-hub-title {
+    font-size: 1.5rem !important;
+  }
+  
+  /* Fix for filter overlap with WA icon */
+  .filter-sidebar {
+    padding-bottom: 100px;
+  }
+
+  /* Hide floating widgets when mobile menu is open */
+  body.menu-open .wa-float {
+    display: none !important;
   }
 }

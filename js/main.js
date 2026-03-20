@@ -1,11 +1,16 @@
-/* ============================================
-   ARTI ENTERPRISES — Main JavaScript
-   Light Theme — Clean & Professional
-   ============================================ */
+/**
+ * @file ARTI ENTERPRISES — Main JavaScript
+ * @description Global utilities, DOM hydration, and UI interactions.
+ * @author ARTI ENTERPRISES
+ * @version 1.1.0
+ */
+
+let _cachedConfig = null;
 
 function getSiteConfig() {
+  if (_cachedConfig) return _cachedConfig;
   const site = window.ARTI_SITE || {};
-  return {
+  _cachedConfig = {
     businessName: site.businessName || 'ARTI ENTERPRISES',
     businessCategory: site.businessCategory || 'Packaging Supplier',
     businessAbout: site.businessAbout || 'Corrugated box manufacturer in Pune for 3 Ply, 5 Ply, 7 Ply, die-cut, printed, and custom packaging solutions. Bulk and custom orders welcome.',
@@ -22,6 +27,7 @@ function getSiteConfig() {
     email: site.email || 'artienterprises17@rediffmail.com',
     contactReplyPromise: site.contactReplyPromise || 'Reply within 24 hours'
   };
+  return _cachedConfig;
 }
 
 function buildWhatsAppUrl(message) {
@@ -95,7 +101,8 @@ function buildLeadMessage({
 window.ARTI_SITE_UTILS = {
   getSiteConfig,
   buildWhatsAppUrl,
-  buildLeadMessage
+  buildLeadMessage,
+  formatLeadTimestamp
 };
 
 function bootstrapMainScripts() {
@@ -120,64 +127,35 @@ if (document.readyState === 'loading') {
 function hydrateSiteLinks() {
   const site = getSiteConfig();
 
-  document.querySelectorAll('[data-site-phone]').forEach((el) => {
-    el.setAttribute('href', site.phoneHref);
-    if (el.dataset.sitePhone === 'display') {
-      el.textContent = site.phoneDisplay;
-    }
-  });
+  const hydrationMap = {
+    'phone': { attr: 'href', val: site.phoneHref, text: site.phoneDisplay },
+    'email': { attr: 'href', val: `mailto:${site.email}`, text: site.email },
+    'website': { attr: 'href', val: site.website, text: site.website },
+    'whatsapp': { 
+      attr: 'href', 
+      val: (el) => buildWhatsAppUrl(el.dataset.whatsappText || site.whatsappGreeting),
+      text: `${site.phoneDisplay} (WhatsApp)` 
+    },
+    'whatsapp-base': { attr: 'href', val: site.whatsappBase, text: `${site.phoneDisplay} (WhatsApp)` },
+    'reply-promise': { text: site.contactReplyPromise },
+    'description': { text: site.businessDescription },
+    'about': { text: site.businessAbout },
+    'address': { text: site.addressDisplay },
+    'business-hours': { text: site.businessHoursDisplay },
+    'catalog-price': { text: site.catalogPriceLabel }
+  };
 
-  document.querySelectorAll('[data-site-email]').forEach((el) => {
-    el.setAttribute('href', `mailto:${site.email}`);
-    if (el.dataset.siteEmail === 'display') {
-      el.textContent = site.email;
-    }
-  });
-
-  document.querySelectorAll('[data-site-website]').forEach((el) => {
-    el.setAttribute('href', site.website);
-    if (el.dataset.siteWebsite === 'display') {
-      el.textContent = site.website;
-    }
-  });
-
-  document.querySelectorAll('[data-site-whatsapp]').forEach((el) => {
-    const rawText = el.dataset.whatsappText || site.whatsappGreeting;
-    el.setAttribute('href', buildWhatsAppUrl(rawText));
-    if (el.dataset.siteWhatsapp === 'display') {
-      el.textContent = `${site.phoneDisplay} (WhatsApp)`;
-    }
-  });
-
-  document.querySelectorAll('[data-site-whatsapp-base]').forEach((el) => {
-    el.setAttribute('href', site.whatsappBase);
-    if (el.dataset.siteWhatsappBase === 'display') {
-      el.textContent = `${site.phoneDisplay} (WhatsApp)`;
-    }
-  });
-
-  document.querySelectorAll('[data-site-reply-promise]').forEach((el) => {
-    el.textContent = site.contactReplyPromise;
-  });
-
-  document.querySelectorAll('[data-site-description]').forEach((el) => {
-    el.textContent = site.businessDescription;
-  });
-
-  document.querySelectorAll('[data-site-about]').forEach((el) => {
-    el.textContent = site.businessAbout;
-  });
-
-  document.querySelectorAll('[data-site-address]').forEach((el) => {
-    el.textContent = site.addressDisplay;
-  });
-
-  document.querySelectorAll('[data-site-business-hours]').forEach((el) => {
-    el.textContent = site.businessHoursDisplay;
-  });
-
-  document.querySelectorAll('[data-site-catalog-price]').forEach((el) => {
-    el.textContent = site.catalogPriceLabel;
+  Object.entries(hydrationMap).forEach(([key, config]) => {
+    document.querySelectorAll(`[data-site-${key}]`).forEach((el) => {
+      if (config.attr) {
+        const val = typeof config.val === 'function' ? config.val(el) : config.val;
+        el.setAttribute(config.attr, val);
+      }
+      const dataKey = `site${key.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}`;
+      if (el.dataset[dataKey] === 'display' || !config.attr) {
+        el.textContent = config.text;
+      }
+    });
   });
 }
 
@@ -192,39 +170,63 @@ function initHeader() {
   onScroll();
 }
 
-/* ---- Mobile Navigation ---- */
+/**
+ * Mobile Navigation
+ * @description Handles hamburger menu toggle, outside click close, and
+ *              hides floating widgets (Tidio/WhatsApp) while menu is open.
+ */
 function initMobileNav() {
   const hamburger = document.getElementById('hamburger');
   const nav = document.getElementById('nav');
   if (!hamburger || !nav) return;
 
+  /** Close the mobile menu and restore page state */
+  function closeMenu() {
+    hamburger.classList.remove('open');
+    nav.classList.remove('open');
+    document.body.style.overflow = '';
+    document.body.classList.remove('menu-open');
+    if (window.tidioChatApi) window.tidioChatApi.show();
+  }
+
   hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('open');
-    nav.classList.toggle('open');
-    document.body.style.overflow = nav.classList.contains('open') ? 'hidden' : '';
+    const willOpen = !nav.classList.contains('open');
+    if (willOpen) {
+      hamburger.classList.add('open');
+      nav.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('menu-open');
+      if (window.tidioChatApi) window.tidioChatApi.hide();
+    } else {
+      closeMenu();
+    }
   });
 
   nav.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', () => {
-      hamburger.classList.remove('open');
-      nav.classList.remove('open');
-      document.body.style.overflow = '';
-    });
+    link.addEventListener('click', closeMenu);
   });
 
   document.addEventListener('click', (e) => {
     if (!nav.contains(e.target) && !hamburger.contains(e.target) && nav.classList.contains('open')) {
-      hamburger.classList.remove('open');
-      nav.classList.remove('open');
-      document.body.style.overflow = '';
+      closeMenu();
     }
   });
 }
 
-/* ---- Scroll Reveal Animation ---- */
+/**
+ * Scroll Reveal Animation
+ * @description Uses IntersectionObserver to animate elements into view
+ *              when they enter the viewport. Each element animates once.
+ */
 function initScrollReveal() {
   const reveals = document.querySelectorAll('.reveal');
   if (!reveals.length) return;
+
+  if (!('IntersectionObserver' in window)) {
+    // Fallback: show all elements if IO not supported
+    reveals.forEach((el) => el.classList.add('visible'));
+    return;
+  }
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -293,13 +295,15 @@ function clearFilters() {
 
 window.clearFilters = clearFilters;
 
-/* ---- Contact WhatsApp Quote ---- */
+/**
+ * Contact WhatsApp Quote Button
+ * @description Simple fallback button that opens WhatsApp with a greeting.
+ */
 function initContactWhatsApp() {
   const btn = document.getElementById('btnContactWhatsApp');
   if (!btn) return;
 
   btn.addEventListener('click', () => {
-    // Basic redirect if form is missing
     const site = getSiteConfig();
     window.open(buildWhatsAppUrl(site.whatsappGreeting), '_blank', 'noopener');
   });
@@ -307,26 +311,43 @@ function initContactWhatsApp() {
 
 /* ---- Price Tier Selection (product detail) ---- */
 function initPriceTiers() {
-  const tiers = document.querySelectorAll('.price-tier');
-  if (!tiers.length) return;
+  if (document.documentElement.dataset.priceTierDelegated === 'true') return;
+  document.documentElement.dataset.priceTierDelegated = 'true';
 
-  tiers.forEach((tier) => {
-    tier.addEventListener('click', () => {
-      tiers.forEach((t) => t.classList.remove('active'));
-      tier.classList.add('active');
+  document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const tier = target ? target.closest('.price-tier') : null;
+    if (!tier) return;
+
+    const group = tier.parentElement;
+    if (!group || !group.classList.contains('price-tiers')) return;
+
+    group.querySelectorAll('.price-tier').forEach((item) => {
+      item.classList.toggle('active', item === tier);
     });
   });
 }
 
-/* ---- Active Navigation Highlighting ---- */
+/**
+ * Active Navigation Highlighting
+ * @description Automatically highlights the current page in the navigation menu.
+ */
 function initActiveNav() {
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const path = window.location.pathname;
+  const fileName = path.split('/').pop() || 'index.html';
+  
   document.querySelectorAll('.nav a').forEach((link) => {
     const href = link.getAttribute('href');
-    if (href === currentPage) {
+    if (!href || link.classList.contains('btn')) return;
+
+    // Normalize comparison
+    const isHome = (fileName === 'index.html' || fileName === '') && href === 'index.html';
+    const isMatch = href === fileName || isHome;
+
+    if (isMatch) {
       link.classList.add('active');
-    } else if (link.classList.contains('active') && !link.classList.contains('btn')) {
-      if (href !== currentPage) link.classList.remove('active');
+    } else {
+      link.classList.remove('active');
     }
   });
 }

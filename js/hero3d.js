@@ -1,8 +1,11 @@
-/* ============================================
-   Home Page 3D Hero Animation
-   Three.js + GSAP — Auto-rotating box with
-   periodic exploded layer reveal
-   ============================================ */
+/**
+ * @file Home Page 3D Hero Animation
+ * @description Auto-rotating Three.js box with periodic exploded layer reveal.
+ *              Respects prefers-reduced-motion and pauses when tab is hidden.
+ * @author ARTI ENTERPRISES
+ * @version 1.1.0
+ * @requires THREE.js r128, GSAP (optional, for exploded animation)
+ */
 
 (function () {
     'use strict';
@@ -515,6 +518,17 @@
         collectLabels();
         init();
     }
+
+    /* ── CLEANUP on page unload (prevent GPU memory leak) ── */
+    window.addEventListener('beforeunload', function () {
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+        if (explodeTimer) clearTimeout(explodeTimer);
+        if (explodeTimeline && explodeTimeline.kill) explodeTimeline.kill();
+        if (renderer) {
+            renderer.dispose();
+            renderer.forceContextLoss();
+        }
+    });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', boot);

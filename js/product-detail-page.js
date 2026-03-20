@@ -1,3 +1,10 @@
+/**
+ * @file Product Detail Page
+ * @description Dynamic product detail page rendering with SEO schema,
+ *              related products, and WhatsApp quote integration.
+ * @author ARTI ENTERPRISES
+ * @version 1.1.0
+ */
 (function () {
   'use strict';
 
@@ -6,35 +13,12 @@
 
   if (!PRODUCT_KEYS.length) return;
 
-  function getSiteUtils() {
-    return window.ARTI_SITE_UTILS || {};
-  }
-
-  function getSiteConfig() {
-    if (typeof getSiteUtils().getSiteConfig === 'function') {
-      return getSiteUtils().getSiteConfig();
-    }
-    return window.ARTI_SITE || {
-      businessName: 'ARTI ENTERPRISES',
-      website: 'https://arti-enterprises.vercel.app',
-      catalogPriceLabel: 'Price on request'
-    };
-  }
-
-  function buildWhatsAppUrl(message) {
-    if (typeof getSiteUtils().buildWhatsAppUrl === 'function') {
-      return getSiteUtils().buildWhatsAppUrl(message);
-    }
-    const site = getSiteConfig();
-    return `${site.whatsappBase || 'https://wa.me/919420996107'}?text=${encodeURIComponent(message)}`;
-  }
-
-  function buildLeadMessage(payload) {
-    if (typeof getSiteUtils().buildLeadMessage === 'function') {
-      return getSiteUtils().buildLeadMessage(payload);
-    }
-    return payload.closing || payload.requestType || 'Please share quotation and delivery timeline.';
-  }
+  /* Use shared utilities from main.js (with safe fallbacks) */
+  const {
+    getSiteConfig = () => window.ARTI_SITE || { businessName: 'ARTI ENTERPRISES', website: 'https://arti-enterprises.vercel.app', catalogPriceLabel: 'Price on request' },
+    buildWhatsAppUrl = (msg) => `https://wa.me/919420996107?text=${encodeURIComponent(msg)}`,
+    buildLeadMessage = (payload) => payload.closing || payload.requestType || 'Please share quotation.'
+  } = window.ARTI_SITE_UTILS || {};
 
   function getProduct() {
     const params = new URLSearchParams(window.location.search);
