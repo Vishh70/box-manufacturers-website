@@ -521,34 +521,37 @@
         const offset = Math.max(0.62, maxSpan * 0.65);
         const tickSize = Math.max(0.12, offset * 0.15);
 
+        // LENGTH Line (along X axis, placed in front of the box at +Z)
         const lenPts = [
-            new THREE.Vector3(l / 2 + offset, -h / 2, -w / 2),
-            new THREE.Vector3(l / 2 + offset, -h / 2, w / 2)
-        ];
-        const lenGeo = new THREE.BufferGeometry().setFromPoints(lenPts);
-        mainGroup.add(new THREE.Line(lenGeo, lineMat));
-        addTick(mainGroup, l / 2 + offset, -h / 2, -w / 2, tickSize, 0, 0, lineMat);
-        addTick(mainGroup, l / 2 + offset, -h / 2, w / 2, tickSize, 0, 0, lineMat);
-        const lenLabel = makeLabel(formatDim(state.length), 'dim-label');
-        if (lenLabel) {
-            lenLabel.position.set(l / 2 + offset + 0.35, -h / 2, 0);
-            mainGroup.add(lenLabel);
-        }
-
-        const widPts = [
             new THREE.Vector3(-l / 2, -h / 2, w / 2 + offset),
             new THREE.Vector3(l / 2, -h / 2, w / 2 + offset)
         ];
-        const widGeo = new THREE.BufferGeometry().setFromPoints(widPts);
-        mainGroup.add(new THREE.Line(widGeo, lineMat));
+        const lenGeo = new THREE.BufferGeometry().setFromPoints(lenPts);
+        mainGroup.add(new THREE.Line(lenGeo, lineMat));
         addTick(mainGroup, -l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
         addTick(mainGroup, l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
+        const lenLabel = makeLabel(formatDim(state.length), 'dim-label');
+        if (lenLabel) {
+            lenLabel.position.set(0, -h / 2, w / 2 + offset + 0.35); // centered on X
+            mainGroup.add(lenLabel);
+        }
+
+        // WIDTH Line (along Z axis, placed to the right of the box at +X)
+        const widPts = [
+            new THREE.Vector3(l / 2 + offset, -h / 2, -w / 2),
+            new THREE.Vector3(l / 2 + offset, -h / 2, w / 2)
+        ];
+        const widGeo = new THREE.BufferGeometry().setFromPoints(widPts);
+        mainGroup.add(new THREE.Line(widGeo, lineMat));
+        addTick(mainGroup, l / 2 + offset, -h / 2, -w / 2, tickSize, 0, 0, lineMat);
+        addTick(mainGroup, l / 2 + offset, -h / 2, w / 2, tickSize, 0, 0, lineMat);
         const widLabel = makeLabel(formatDim(state.width), 'dim-label');
         if (widLabel) {
-            widLabel.position.set(0, -h / 2, w / 2 + offset + 0.35);
+            widLabel.position.set(l / 2 + offset + 0.35, -h / 2, 0); // centered on Z
             mainGroup.add(widLabel);
         }
 
+        // HEIGHT Line (along Y axis, placed to the left and back)
         const hPts = [
             new THREE.Vector3(-l / 2 - offset * 0.5, -h / 2, -w / 2 - offset * 0.3),
             new THREE.Vector3(-l / 2 - offset * 0.5, h / 2, -w / 2 - offset * 0.3)
