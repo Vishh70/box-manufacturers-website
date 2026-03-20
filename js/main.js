@@ -249,7 +249,7 @@ function initContactWhatsApp() {
     msg += `Please share quotation and delivery timeline for the above specification.\n`;
     msg += `Thank you.`;
 
-    const waUrl = `https://wa.me/917066959760?text=${encodeURIComponent(msg)}`;
+    const waUrl = `https://wa.me/919420996107?text=${encodeURIComponent(msg)}`;
     window.open(waUrl, '_blank');
   });
 }

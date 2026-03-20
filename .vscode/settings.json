@@ -1,0 +1,5 @@
+{
+    "java.jdt.ls.vmargs": "-Dexample.disable=true",
+    "java.project.importOnFirstTimeStartup": "never",
+    "java.autobuild.enabled": false
+}
