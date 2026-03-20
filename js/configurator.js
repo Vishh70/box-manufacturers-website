@@ -355,18 +355,27 @@
     function buildSolidBox(l, w, h, ply, thickness) {
         // Subtle thickness boost, not too blocky
         const visualThickness = Math.max(thickness * 1.1, 0.06);
+        
+        // Enhance exterior with fiber bump map
         const materialExterior = createBoxMaterial(ply);
+        const tex = createKraftTexture();
+        materialExterior.bumpMap = tex;
+        materialExterior.bumpScale = 0.0035;
+        materialExterior.needsUpdate = true;
+
         const materialInterior = new THREE.MeshStandardMaterial({
-            map: createKraftTexture(),
-            color: 0xDBC39A,
-            roughness: 0.85,
-            metalness: 0.05
+            map: tex,
+            bumpMap: tex,
+            bumpScale: 0.002,
+            color: 0xE2CEAD, // Lighter, premium unbleached interior
+            roughness: 0.8,
+            metalness: 0.02
         });
 
-        const edgeColor = 0xA08055; 
+        const edgeColor = 0x907248; // Darkened the corrugated edge color
         const edgeMaterial = new THREE.MeshStandardMaterial({
             color: edgeColor, roughness: 1.0, metalness: 0.0,
-            bumpMap: createCorrugatedBumpMap(), bumpScale: 0.025
+            bumpMap: createCorrugatedBumpMap(), bumpScale: 0.04 // Deeper flutes
         });
 
         const frontBackW = l;
@@ -506,10 +515,11 @@
 
     /* ── DIMENSION LINES ── */
     function buildDimensionLines(l, w, h) {
-        const lineMat = new THREE.LineBasicMaterial({ color: 0xa8c8f9, transparent: true, opacity: 0.95 });
+        const lineMat = new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.8 });
         const maxSpan = Math.max(l, w, h);
-        const offset = Math.max(0.62, maxSpan * 0.4);
-        const tickSize = Math.max(0.12, offset * 0.22);
+        // Push offset to 65% of max span so it clears the flaps completely
+        const offset = Math.max(0.62, maxSpan * 0.65);
+        const tickSize = Math.max(0.12, offset * 0.15);
 
         const lenPts = [
             new THREE.Vector3(l / 2 + offset, -h / 2, -w / 2),
@@ -521,7 +531,7 @@
         addTick(mainGroup, l / 2 + offset, -h / 2, w / 2, tickSize, 0, 0, lineMat);
         const lenLabel = makeLabel(formatDim(state.length), 'dim-label');
         if (lenLabel) {
-            lenLabel.position.set(l / 2 + offset * 1.05, -h / 2, 0);
+            lenLabel.position.set(l / 2 + offset + 0.35, -h / 2, 0);
             mainGroup.add(lenLabel);
         }
 
@@ -535,21 +545,21 @@
         addTick(mainGroup, l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
         const widLabel = makeLabel(formatDim(state.width), 'dim-label');
         if (widLabel) {
-            widLabel.position.set(0, -h / 2, w / 2 + offset * 1.05);
+            widLabel.position.set(0, -h / 2, w / 2 + offset + 0.35);
             mainGroup.add(widLabel);
         }
 
         const hPts = [
-            new THREE.Vector3(-l / 2 - offset * 0.5, -h / 2, -w / 2 - offset * 0.2),
-            new THREE.Vector3(-l / 2 - offset * 0.5, h / 2, -w / 2 - offset * 0.2)
+            new THREE.Vector3(-l / 2 - offset * 0.5, -h / 2, -w / 2 - offset * 0.3),
+            new THREE.Vector3(-l / 2 - offset * 0.5, h / 2, -w / 2 - offset * 0.3)
         ];
         const hGeo = new THREE.BufferGeometry().setFromPoints(hPts);
         mainGroup.add(new THREE.Line(hGeo, lineMat));
-        addTick(mainGroup, -l / 2 - offset * 0.5, -h / 2, -w / 2 - offset * 0.2, tickSize, 0, 0, lineMat);
-        addTick(mainGroup, -l / 2 - offset * 0.5, h / 2, -w / 2 - offset * 0.2, tickSize, 0, 0, lineMat);
+        addTick(mainGroup, -l / 2 - offset * 0.5, -h / 2, -w / 2 - offset * 0.3, tickSize, 0, 0, lineMat);
+        addTick(mainGroup, -l / 2 - offset * 0.5, h / 2, -w / 2 - offset * 0.3, tickSize, 0, 0, lineMat);
         const hLabel = makeLabel(formatDim(state.height), 'dim-label');
         if (hLabel) {
-            hLabel.position.set(-l / 2 - offset * 0.65, 0, -w / 2 - offset * 0.2);
+            hLabel.position.set(-l / 2 - offset * 0.5 - 0.45, 0, -w / 2 - offset * 0.3);
             mainGroup.add(hLabel);
         }
     }
