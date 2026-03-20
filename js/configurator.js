@@ -52,6 +52,7 @@
         buildLeadMessage = () => 'Quotation Request',
         buildWhatsAppUrl = (msg) => `https://wa.me/919420996107?text=${encodeURIComponent(msg)}`
     } = window.ARTI_SITE_UTILS || {};
+    const hasThreeSupport = typeof window.THREE !== 'undefined';
 
     /* ── STATE ── */
     let state = {
@@ -94,10 +95,23 @@
         const container = document.getElementById('boxViewer');
         if (!container) return;
 
-        setupScene(container);
-        buildBox();
-        animate();
-        setupControls();
+        if (hasThreeSupport) {
+            setupScene(container);
+            buildBox();
+            animate();
+            setupControls();
+
+            container.addEventListener('pointerdown', () => {
+                const hint = document.getElementById('viewerHint');
+                if (hint) hint.classList.add('hidden');
+            }, { once: true });
+
+            window.addEventListener('resize', onResize);
+        } else {
+            setViewerFallback(container);
+            disableViewerActions();
+        }
+
         setupSliders();
         setupPlyButtons();
         setupUnitToggle();
@@ -107,13 +121,30 @@
         setupWhatsAppQuote();
         setupDownloadSpec();
         updateSpecs();
+    }
 
-        container.addEventListener('pointerdown', () => {
-            const hint = document.getElementById('viewerHint');
-            if (hint) hint.classList.add('hidden');
-        }, { once: true });
+    function setViewerFallback(container) {
+        container.classList.add('cfg-viewer--fallback');
+        container.replaceChildren();
 
-        window.addEventListener('resize', onResize);
+        const fallback = document.createElement('div');
+        fallback.className = 'cfg-viewer-fallback';
+
+        const title = document.createElement('strong');
+        title.textContent = '3D preview unavailable';
+
+        const message = document.createElement('p');
+        message.textContent = 'The interactive viewer could not load, but you can still configure dimensions, compare ply strength, and request a quote.';
+
+        fallback.append(title, message);
+        container.appendChild(fallback);
+    }
+
+    function disableViewerActions() {
+        document.querySelectorAll('#btnExplode, #btnReset').forEach((button) => {
+            button.disabled = true;
+            button.setAttribute('aria-disabled', 'true');
+        });
     }
 
     /* ── KRAFT TEXTURE (procedural canvas) ── */
@@ -126,68 +157,40 @@
         canvas.height = size;
         const ctx = canvas.getContext('2d');
 
-        /* base fill with noise grain */
+        /* base fill with very soft gradient for a clean, premium look */
         const gradient = ctx.createLinearGradient(0, 0, size, size);
-        gradient.addColorStop(0, '#d8b982');
-        gradient.addColorStop(0.5, '#c59d5f');
-        gradient.addColorStop(1, '#a67b46');
+        gradient.addColorStop(0, '#e5cba2');
+        gradient.addColorStop(0.5, '#d6ba8f');
+        gradient.addColorStop(1, '#c5a77a');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, size, size);
 
-        /* fiber grain */
-        for (let i = 0; i < 350; i++) {
+        /* subtle fiber grain, reduced for a cleaner vector-like reference style */
+        for (let i = 0; i < 150; i++) {
             const y = Math.random() * size;
-            const alpha = 0.02 + Math.random() * 0.04;
+            const alpha = 0.01 + Math.random() * 0.02;
             ctx.strokeStyle = `rgba(90,60,30,${alpha})`;
             ctx.lineWidth = 0.8 + Math.random() * 1.5;
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(size, y + (Math.random() - 0.5) * 20);
+            ctx.lineTo(size, y + (Math.random() - 0.5) * 10);
             ctx.stroke();
         }
 
-        /* recycled pulp specks */
-        for (let i = 0; i < 25000; i++) {
+        /* very faint pulp specks */
+        for (let i = 0; i < 5000; i++) {
             const x = Math.random() * size;
             const y = Math.random() * size;
-            const len = 1 + Math.random() * 4;
+            const len = 1 + Math.random() * 3;
             const angle = Math.random() * Math.PI * 2;
             const dark = Math.random() > 0.85;
-            const alpha = 0.05 + Math.random() * 0.15;
+            const alpha = 0.02 + Math.random() * 0.05;
             ctx.strokeStyle = dark ? `rgba(60,40,20,${alpha})` : `rgba(255,250,230,${alpha})`;
             ctx.lineWidth = 0.4 + Math.random() * 0.4;
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
             ctx.stroke();
-        }
-
-        /* water stains / unevenness */
-        for (let i = 0; i < 15; i++) {
-            const x = Math.random() * size;
-            const y = Math.random() * size;
-            const r = 20 + Math.random() * 60;
-            const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-            grad.addColorStop(0, `rgba(130,100,60,${0.03 + Math.random() * 0.04})`);
-            grad.addColorStop(1, 'rgba(130,100,60,0)');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        /* subtle grain overlay */
-        for (let i = 0; i < 6000; i++) {
-            const x = Math.random() * size;
-            const y = Math.random() * size;
-            const r = 0.5 + Math.random() * 1;
-            const alpha = 0.02 + Math.random() * 0.06;
-            ctx.fillStyle = Math.random() > 0.5
-                ? `rgba(255,240,210,${alpha})`
-                : `rgba(100,70,30,${alpha})`;
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fill();
         }
 
         const tex = new THREE.CanvasTexture(canvas);
@@ -223,7 +226,7 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.08;
+        renderer.toneMappingExposure = 1.15; // slightly brighter
         renderer.physicallyCorrectLights = true;
         renderer.setClearColor(0x000000, 0);
         container.appendChild(renderer.domElement);
@@ -240,12 +243,12 @@
             container.appendChild(labelRenderer.domElement);
         }
 
-        /* Lights — studio setup */
-        const ambient = new THREE.HemisphereLight(0xffffff, 0xeef2ff, 0.95);
+        /* Lights — studio setup matching the reference */
+        const ambient = new THREE.HemisphereLight(0xffffff, 0xeef2ff, 1.1);
         scene.add(ambient);
 
-        const dirLight = new THREE.DirectionalLight(0xfffcf5, 1.8);
-        dirLight.position.set(-5, 8, 6);
+        const dirLight = new THREE.DirectionalLight(0xfffcf5, 1.6);
+        dirLight.position.set(-6, 10, 5); // Moves shadow to bottom right
         dirLight.castShadow = true;
         dirLight.shadow.mapSize.set(2048, 2048);
         dirLight.shadow.camera.near = 0.5;
@@ -253,21 +256,14 @@
         dirLight.shadow.bias = -0.0002;
         scene.add(dirLight);
 
-        const fillLight = new THREE.DirectionalLight(0xffffff, 1.1);
-        fillLight.position.set(6, 3, -4);
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        fillLight.position.set(6, 4, -4);
         scene.add(fillLight);
-
-        const rimLight = new THREE.DirectionalLight(0xe0f2fe, 0.75);
-        rimLight.position.set(-2, 4, -8);
-        scene.add(rimLight);
-
-        const warmKick = new THREE.PointLight(0xffd4a3, 0.55, 12, 2);
-        warmKick.position.set(0, 1.2, 3.2);
-        scene.add(warmKick);
 
         /* Ground shadow plane */
         const groundGeo = new THREE.PlaneGeometry(20, 20);
-        const groundMat = new THREE.ShadowMaterial({ opacity: 0.12 });
+        // Darkened shadow opacity from 0.12 to 0.25 to make it distinct like the reference
+        const groundMat = new THREE.ShadowMaterial({ opacity: 0.25 });
         groundPlane = new THREE.Mesh(groundGeo, groundMat);
         groundPlane.rotation.x = -Math.PI / 2;
         groundPlane.position.y = -0.8;
@@ -328,6 +324,7 @@
 
     /* ── BUILD BOX (entry point) ── */
     function buildBox() {
+        if (!hasThreeSupport || !scene) return;
         if (mainGroup) {
             scene.remove(mainGroup);
             disposeObjectTree(mainGroup);
@@ -356,49 +353,44 @@
 
     /* ── SOLID BOX ── */
     function buildSolidBox(l, w, h, ply, thickness) {
-        const material = createBoxMaterial(ply);
-
-        /* edge outline */
-        const edgeColor = 0xA88B5E; // Slightly darker than kraft for realistic edge shading
-
-        /* Main Body Panels
-           We place the side panels between the front/back panels. */
-        const mainPanelThickness = thickness;
-        const frontBackW = l;
-        const sideW = w - (mainPanelThickness * 2);
-
-        // Materials for different faces (corrugated edge trick)
-        const edgeMaterial = new THREE.MeshStandardMaterial({
-            color: edgeColor, roughness: 0.95, metalness: 0.0,
-            bumpMap: createCorrugatedBumpMap(), bumpScale: 0.015
+        // Subtle thickness boost, not too blocky
+        const visualThickness = Math.max(thickness * 1.1, 0.06);
+        const materialExterior = createBoxMaterial(ply);
+        const materialInterior = new THREE.MeshStandardMaterial({
+            map: createKraftTexture(),
+            color: 0xDBC39A,
+            roughness: 0.85,
+            metalness: 0.05
         });
 
-        // 0: right, 1: left, 2: top, 3: bottom, 4: front, 5: back
-        const frontBackMats = [
-            edgeMaterial, edgeMaterial, // right, left (edges)
-            edgeMaterial, edgeMaterial, // top, bottom (edges)
-            material, material          // front, back (faces)
-        ];
+        const edgeColor = 0xA08055; 
+        const edgeMaterial = new THREE.MeshStandardMaterial({
+            color: edgeColor, roughness: 1.0, metalness: 0.0,
+            bumpMap: createCorrugatedBumpMap(), bumpScale: 0.025
+        });
 
-        const sideMats = [
-            material, material,         // right, left (faces)
-            edgeMaterial, edgeMaterial, // top, bottom (edges)
-            edgeMaterial, edgeMaterial  // front, back (edges)
-        ];
+        const frontBackW = l;
+        const sideW = w - (visualThickness * 2);
 
-        const bottomMats = [
-            edgeMaterial, edgeMaterial, // right, left (edges)
-            material, material,         // top, bottom (faces)
-            edgeMaterial, edgeMaterial  // front, back (edges)
-        ];
+        // 0: right, 1: left, 2: top, 3: bottom, 4: front (ext), 5: back (int)
+        const frontMats = [edgeMaterial, edgeMaterial, edgeMaterial, edgeMaterial, materialExterior, materialInterior];
+        // 0: right, 1: left, 2: top, 3: bottom, 4: front (int), 5: back (ext)
+        const backMats = [edgeMaterial, edgeMaterial, edgeMaterial, edgeMaterial, materialInterior, materialExterior];
+        
+        // 0: right (ext), 1: left (int), 2: top, 3: bottom, 4: front, 5: back
+        const rightMats = [materialExterior, materialInterior, edgeMaterial, edgeMaterial, edgeMaterial, edgeMaterial];
+        // 0: right (int), 1: left (ext), 2: top, 3: bottom, 4: front, 5: back
+        const leftMats = [materialInterior, materialExterior, edgeMaterial, edgeMaterial, edgeMaterial, edgeMaterial];
 
-        /* panels: front, back, left, right, bottom */
+        // 0: right, 1: left, 2: top (int), 3: bottom (ext), 4: front, 5: back
+        const bottomMats = [edgeMaterial, edgeMaterial, materialInterior, materialExterior, edgeMaterial, edgeMaterial];
+
         const panels = [
-            { size: [frontBackW, h, mainPanelThickness], pos: [0, 0, w / 2 - mainPanelThickness / 2], mats: frontBackMats }, // Front
-            { size: [frontBackW, h, mainPanelThickness], pos: [0, 0, -w / 2 + mainPanelThickness / 2], mats: frontBackMats },// Back
-            { size: [mainPanelThickness, h, sideW], pos: [-l / 2 + mainPanelThickness / 2, 0, 0], mats: sideMats },          // Left
-            { size: [mainPanelThickness, h, sideW], pos: [l / 2 - mainPanelThickness / 2, 0, 0], mats: sideMats },           // Right
-            { size: [l - mainPanelThickness * 2, mainPanelThickness, sideW], pos: [0, -h / 2 + mainPanelThickness / 2, 0], mats: bottomMats } // Bottom inner floor
+            { size: [frontBackW, h, visualThickness], pos: [0, 0, w / 2 - visualThickness / 2], mats: frontMats },
+            { size: [frontBackW, h, visualThickness], pos: [0, 0, -w / 2 + visualThickness / 2], mats: backMats },
+            { size: [visualThickness, h, sideW], pos: [-l / 2 + visualThickness / 2, 0, 0], mats: leftMats },
+            { size: [visualThickness, h, sideW], pos: [l / 2 - visualThickness / 2, 0, 0], mats: rightMats },
+            { size: [l - visualThickness * 2, visualThickness, sideW], pos: [0, -h / 2 + visualThickness / 2, 0], mats: bottomMats }
         ];
 
         panels.forEach(p => {
@@ -410,61 +402,67 @@
             mainGroup.add(mesh);
         });
 
-        /* ── OPEN FLAPS ── */
+        /* ── REALISTIC OPEN FLAPS ── */
         const flapL_major = l;
         const flapW_major = w / 2;
-        const flapL_minor = w - (mainPanelThickness * 2);
+        const flapL_minor = w - (visualThickness * 2);
         const flapW_minor = l / 2;
 
-        const angleFront = -0.5; 
-        const angleBack = 0.6;
-        const angleLeft = -0.4;
-        const angleRight = 0.45;
+        // Upward leaning open flaps. 0 = perfectly horizontal flat. 
+        // -PI/2 (approx -1.57) = closed vertically inwards.
+        const angleFront = -0.85; 
+        const angleBack = 0.85;
+        const angleLeft = -0.7;
+        const angleRight = 0.7;
 
         // Front Flap
-        const frontFlapGeo = new THREE.BoxGeometry(flapL_major, mainPanelThickness, flapW_major);
-        frontFlapGeo.translate(0, mainPanelThickness / 2, flapW_major / 2);
-        const frontFlap = new THREE.Mesh(frontFlapGeo, bottomMats);
+        const frontFlapGeo = new THREE.BoxGeometry(flapL_major, visualThickness, flapW_major);
+        frontFlapGeo.translate(0, visualThickness / 2, flapW_major / 2);
+        const flapFrontMats = [edgeMaterial, edgeMaterial, materialInterior, materialExterior, edgeMaterial, edgeMaterial];
+        const frontFlap = new THREE.Mesh(frontFlapGeo, flapFrontMats);
         frontFlap.castShadow = true;
         frontFlap.receiveShadow = true;
         const pivotFront = new THREE.Group();
-        pivotFront.position.set(0, h / 2, w / 2 - mainPanelThickness);
+        pivotFront.position.set(0, h / 2, w / 2 - visualThickness);
         pivotFront.rotation.x = angleFront;
         pivotFront.add(frontFlap);
         mainGroup.add(pivotFront);
 
         // Back Flap
-        const backFlapGeo = new THREE.BoxGeometry(flapL_major, mainPanelThickness, flapW_major);
-        backFlapGeo.translate(0, mainPanelThickness / 2, -flapW_major / 2);
-        const backFlap = new THREE.Mesh(backFlapGeo, bottomMats);
+        const backFlapGeo = new THREE.BoxGeometry(flapL_major, visualThickness, flapW_major);
+        backFlapGeo.translate(0, visualThickness / 2, -flapW_major / 2);
+        const flapBackMats = [edgeMaterial, edgeMaterial, materialInterior, materialExterior, edgeMaterial, edgeMaterial];
+        const backFlap = new THREE.Mesh(backFlapGeo, flapBackMats);
         backFlap.castShadow = true;
         backFlap.receiveShadow = true;
         const pivotBack = new THREE.Group();
-        pivotBack.position.set(0, h / 2, -w / 2 + mainPanelThickness);
+        pivotBack.position.set(0, h / 2, -w / 2 + visualThickness);
         pivotBack.rotation.x = angleBack;
         pivotBack.add(backFlap);
         mainGroup.add(pivotBack);
 
         // Left Flap
-        const leftFlapGeo = new THREE.BoxGeometry(flapW_minor, mainPanelThickness, flapL_minor);
-        leftFlapGeo.translate(-flapW_minor / 2, mainPanelThickness / 2, 0);
-        const leftFlap = new THREE.Mesh(leftFlapGeo, sideMats);
+        const leftFlapGeo = new THREE.BoxGeometry(flapW_minor, visualThickness, flapL_minor);
+        leftFlapGeo.translate(-flapW_minor / 2, visualThickness / 2, 0);
+        const flapLeftMats = [edgeMaterial, edgeMaterial, materialInterior, materialExterior, edgeMaterial, edgeMaterial];
+        const leftFlap = new THREE.Mesh(leftFlapGeo, flapLeftMats);
         leftFlap.castShadow = true;
         leftFlap.receiveShadow = true;
         const pivotLeft = new THREE.Group();
-        pivotLeft.position.set(-l / 2 + mainPanelThickness, h / 2, 0);
+        pivotLeft.position.set(-l / 2 + visualThickness, h / 2, 0);
         pivotLeft.rotation.z = angleLeft;
         pivotLeft.add(leftFlap);
         mainGroup.add(pivotLeft);
 
         // Right Flap
-        const rightFlapGeo = new THREE.BoxGeometry(flapW_minor, mainPanelThickness, flapL_minor);
-        rightFlapGeo.translate(flapW_minor / 2, mainPanelThickness / 2, 0);
-        const rightFlap = new THREE.Mesh(rightFlapGeo, sideMats);
+        const rightFlapGeo = new THREE.BoxGeometry(flapW_minor, visualThickness, flapL_minor);
+        rightFlapGeo.translate(flapW_minor / 2, visualThickness / 2, 0);
+        const flapRightMats = [edgeMaterial, edgeMaterial, materialInterior, materialExterior, edgeMaterial, edgeMaterial];
+        const rightFlap = new THREE.Mesh(rightFlapGeo, flapRightMats);
         rightFlap.castShadow = true;
         rightFlap.receiveShadow = true;
         const pivotRight = new THREE.Group();
-        pivotRight.position.set(l / 2 - mainPanelThickness, h / 2, 0);
+        pivotRight.position.set(l / 2 - visualThickness, h / 2, 0);
         pivotRight.rotation.z = angleRight;
         pivotRight.add(rightFlap);
         mainGroup.add(pivotRight);
@@ -473,22 +471,34 @@
     /* Helper: Corrugated edge bump map */
     function createCorrugatedBumpMap() {
         if (textureCache.corrugated) return textureCache.corrugated;
-        const size = 128;
+        const size = 256;
         const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#111';
+        
+        ctx.fillStyle = '#1a1a1a'; // Deep shadows in the flute gaps
         ctx.fillRect(0, 0, size, size);
-        ctx.fillStyle = '#FFF';
-        for (let y = 0; y < size; y += 8) {
-            ctx.fillRect(0, y, size, 4);
+        
+        // Draw wavy flutes
+        const flutes = 16;
+        const width = size / flutes;
+        for (let i = 0; i < flutes; i++) {
+            const x = i * width;
+            const grad = ctx.createLinearGradient(x, 0, x + width, 0);
+            grad.addColorStop(0, '#1a1a1a');
+            grad.addColorStop(0.5, '#ffffff'); // Peak of the flute
+            grad.addColorStop(1, '#1a1a1a');
+            
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, 0, width, size);
         }
+
         const tex = new THREE.CanvasTexture(canvas);
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        tex.repeat.set(1, 10);
+        tex.repeat.set(8, 1); // Repeat often along the length of the edge
         if (renderer && renderer.capabilities && typeof renderer.capabilities.getMaxAnisotropy === 'function') {
-            tex.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+            tex.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
         }
         textureCache.corrugated = tex;
         return tex;
@@ -511,7 +521,7 @@
         addTick(mainGroup, l / 2 + offset, -h / 2, w / 2, tickSize, 0, 0, lineMat);
         const lenLabel = makeLabel(formatDim(state.length), 'dim-label');
         if (lenLabel) {
-            lenLabel.position.set(l / 2 + offset, -h / 2 - 0.2, 0);
+            lenLabel.position.set(l / 2 + offset * 1.05, -h / 2, 0);
             mainGroup.add(lenLabel);
         }
 
@@ -525,21 +535,21 @@
         addTick(mainGroup, l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
         const widLabel = makeLabel(formatDim(state.width), 'dim-label');
         if (widLabel) {
-            widLabel.position.set(0, -h / 2 - 0.2, w / 2 + offset);
+            widLabel.position.set(0, -h / 2, w / 2 + offset * 1.05);
             mainGroup.add(widLabel);
         }
 
         const hPts = [
-            new THREE.Vector3(-l / 2 - offset * 0.5, -h / 2, -w / 2),
-            new THREE.Vector3(-l / 2 - offset * 0.5, h / 2, -w / 2)
+            new THREE.Vector3(-l / 2 - offset * 0.5, -h / 2, -w / 2 - offset * 0.2),
+            new THREE.Vector3(-l / 2 - offset * 0.5, h / 2, -w / 2 - offset * 0.2)
         ];
         const hGeo = new THREE.BufferGeometry().setFromPoints(hPts);
         mainGroup.add(new THREE.Line(hGeo, lineMat));
-        addTick(mainGroup, -l / 2 - offset * 0.5, -h / 2, -w / 2, tickSize, 0, 0, lineMat);
-        addTick(mainGroup, -l / 2 - offset * 0.5, h / 2, -w / 2, tickSize, 0, 0, lineMat);
-        const hLabel = makeLabel(formatDim(state.height), 'dim-label dim-label-h');
+        addTick(mainGroup, -l / 2 - offset * 0.5, -h / 2, -w / 2 - offset * 0.2, tickSize, 0, 0, lineMat);
+        addTick(mainGroup, -l / 2 - offset * 0.5, h / 2, -w / 2 - offset * 0.2, tickSize, 0, 0, lineMat);
+        const hLabel = makeLabel(formatDim(state.height), 'dim-label');
         if (hLabel) {
-            hLabel.position.set(-l / 2 - offset * 0.5 - 0.2, 0, -w / 2);
+            hLabel.position.set(-l / 2 - offset * 0.65, 0, -w / 2 - offset * 0.2);
             mainGroup.add(hLabel);
         }
     }
@@ -667,6 +677,7 @@
     }
 
     function animate() {
+        if (!hasThreeSupport || !renderer || !camera) return;
         animationFrameId = requestAnimationFrame(animate);
         const delta = Math.min(clock ? clock.getDelta() : 1 / 60, 0.05);
         const smoothing = 1 - Math.pow(1 - INERTIA, delta * 60);
@@ -693,6 +704,7 @@
     }
 
     function onResize() {
+        if (!hasThreeSupport || !camera || !renderer) return;
         const container = document.getElementById('boxViewer');
         if (!container) return;
         camera.aspect = container.clientWidth / container.clientHeight;
@@ -741,8 +753,97 @@
         updateSliderDisplay('valWidth', state.width);
         updateSliderDisplay('valHeight', state.height);
         updateSliderDisplay('valGsm', state.gsm);
-        document.querySelectorAll('.cfg-unit-label').forEach(l => l.textContent = state.unit);
+        document.querySelectorAll('.cfg-unit-label').forEach((label) => {
+            label.textContent = getDisplayUnitLabel();
+        });
         buildBox();
+    }
+
+    function getDisplayUnitLabel() {
+        return state.unit === 'in' ? 'in' : 'mm';
+    }
+
+    function formatConfiguredDimension(value) {
+        return state.unit === 'in' ? (value / 25.4).toFixed(1) : value;
+    }
+
+    function getDisplayDimensions() {
+        return `${formatConfiguredDimension(state.length)} × ${formatConfiguredDimension(state.width)} × ${formatConfiguredDimension(state.height)} ${getDisplayUnitLabel()}`;
+    }
+
+    function getMetricDimensions() {
+        return `${state.length} × ${state.width} × ${state.height} mm`;
+    }
+
+    function getQuoteDimensionSummary() {
+        if (state.unit === 'in') {
+            return `${getDisplayDimensions()} (${getMetricDimensions()})`;
+        }
+        return getMetricDimensions();
+    }
+
+    function renderSuggestionResult(title, lines, warningText) {
+        const result = document.getElementById('suggestionResult');
+        if (!result) return;
+
+        result.replaceChildren();
+        result.classList.remove('is-error');
+
+        const heading = document.createElement('h4');
+        heading.textContent = title;
+        result.appendChild(heading);
+
+        lines.forEach((line) => {
+            const paragraph = document.createElement('p');
+            paragraph.textContent = line;
+            result.appendChild(paragraph);
+        });
+
+        if (warningText) {
+            const warning = document.createElement('p');
+            warning.className = 'cfg-warning';
+            warning.textContent = warningText;
+            result.appendChild(warning);
+        }
+
+        result.style.display = 'block';
+    }
+
+    function renderSuggestionError(message) {
+        const result = document.getElementById('suggestionResult');
+        if (!result) return;
+
+        result.replaceChildren();
+        result.classList.add('is-error');
+
+        const paragraph = document.createElement('p');
+        paragraph.textContent = message;
+        result.appendChild(paragraph);
+        result.style.display = 'block';
+    }
+
+    function setQuoteFeedback(message, type) {
+        const feedback = document.getElementById('quoteFeedback');
+        if (!feedback) return;
+
+        feedback.hidden = false;
+        feedback.textContent = message;
+        feedback.className = `cfg-form-feedback is-${type}`;
+    }
+
+    function clearQuoteFeedback() {
+        const feedback = document.getElementById('quoteFeedback');
+        if (!feedback) return;
+
+        feedback.hidden = true;
+        feedback.textContent = '';
+        feedback.className = 'cfg-form-feedback';
+    }
+
+    function setFieldValidity(field, isValid) {
+        if (!field) return;
+        field.classList.toggle('is-invalid', !isValid);
+        field.setAttribute('aria-invalid', String(!isValid));
     }
 
     function setupPlyButtons() {
@@ -825,10 +926,9 @@
         btn.addEventListener('click', () => {
             const weight = parseFloat(document.getElementById('productWeight').value);
             const shipping = document.getElementById('shippingType').value;
-            const result = document.getElementById('suggestionResult');
             if (!weight || !shipping) {
-                result.innerHTML = '<p>Please enter weight and shipping type.</p>';
-                result.style.display = 'block'; return;
+                renderSuggestionError('Please enter both product weight and shipping type.');
+                return;
             }
             let rPly, rSize, rMargin, warning = '';
             if (weight <= 5) { rPly = '3-Ply'; rSize = '10x8x6 in'; rMargin = 'Safe'; }
@@ -837,29 +937,62 @@
             else { rPly = '7-Ply'; rSize = '22x22x30 in'; rMargin = 'Export Grade'; }
 
             const maxW = state.ply === 3 ? 15 : state.ply === 5 ? 40 : 200;
-            if (weight > maxW) warning = `<p style="color:#DC2626">⚠️ Selection may be weak for ${weight}kg.</p>`;
-            result.innerHTML = `<h4>✅ Recommendation</h4><p>Ply: ${rPly}</p><p>Size: ${rSize}</p><p>Note: ${rMargin}</p>${warning}`;
-            result.style.display = 'block';
+            if (weight > maxW) warning = `Selection may be weak for ${weight} kg with the currently selected ply.`;
+            renderSuggestionResult('Recommended Box Setup', [
+                `Suggested Ply: ${rPly}`,
+                `Typical Size: ${rSize}`,
+                `Handling Note: ${rMargin}`
+            ], warning);
         });
     }
 
     function setupWhatsAppQuote() {
         const btn = document.getElementById('btnQuoteWhatsApp');
         if (!btn) return;
+
+        const nameField = document.getElementById('custName');
+        const phoneField = document.getElementById('custPhone');
+
+        [nameField, phoneField].forEach((field) => {
+            if (!field) return;
+            field.addEventListener('input', () => {
+                setFieldValidity(field, true);
+                clearQuoteFeedback();
+            });
+        });
+
         btn.addEventListener('click', () => {
-            const name = document.getElementById('custName').value.trim();
-            const phone = document.getElementById('custPhone').value.trim();
-            if (!name || !phone) { alert('Please enter Name and Mobile.'); return; }
+            const name = nameField ? nameField.value.trim() : '';
+            const phone = phoneField ? phoneField.value.trim() : '';
+            const phoneDigits = phone.replace(/\D/g, '');
+
+            if (!name) {
+                setFieldValidity(nameField, false);
+                setQuoteFeedback('Please enter your full name before requesting a quote.', 'error');
+                if (nameField) nameField.focus();
+                return;
+            }
+
+            if (phoneDigits.length < 10) {
+                setFieldValidity(phoneField, false);
+                setQuoteFeedback('Please enter a valid mobile number with at least 10 digits.', 'error');
+                if (phoneField) phoneField.focus();
+                return;
+            }
+
+            setFieldValidity(nameField, true);
+            setFieldValidity(phoneField, true);
+            clearQuoteFeedback();
+
             const company = document.getElementById('custCompany').value.trim();
             const qty = document.getElementById('custQty').value.trim();
             const material = document.getElementById('custMaterial').value;
             const printing = document.getElementById('custPrinting').value;
             const plyData = PLY_DATA[state.ply];
-            const sizeStr = `${state.length} × ${state.width} × ${state.height} mm`;
             const details = [
                 'Box Type: Corrugated Box (RSC)',
                 `Source Page: 3D Configurator`,
-                `Dimensions: ${sizeStr}`,
+                `Dimensions: ${getQuoteDimensionSummary()}`,
                 `Ply: ${state.ply}-Ply (${plyData.label})`,
                 `Paper Quality: ${state.gsm} GSM`,
                 `Wall Thickness: ${plyData.thickness} mm`,
@@ -880,6 +1013,7 @@
             });
 
             window.open(buildWhatsAppUrl(message), '_blank', 'noopener');
+            setQuoteFeedback('Opening WhatsApp with your configured quotation request.', 'success');
         });
     }
 
@@ -896,11 +1030,13 @@
         btn.addEventListener('click', () => {
             const plyData = PLY_DATA[state.ply];
             const site = getSiteConfig();
+            const displayDimensions = getDisplayDimensions();
             const content = [
                 'ARTI ENTERPRISES - BOX SPECIFICATION SHEET',
                 '-------------------------------------------',
                 'Product: Corrugated Box (RSC)',
-                `Dimensions: ${state.length} x ${state.width} x ${state.height} ${state.unit}`,
+                `Configured Dimensions: ${displayDimensions}`,
+                ...(state.unit === 'in' ? [`Metric Reference: ${getMetricDimensions()}`] : []),
                 `Ply Type: ${plyData.label}`,
                 `Paper Quality: ${state.gsm} GSM`,
                 `Wall Thickness: ${plyData.thickness} mm`,
@@ -922,7 +1058,7 @@
     }
 
     function frameView() {
-        if (!mainGroup || !camera) return;
+        if (!hasThreeSupport || !mainGroup || !camera) return;
         const bounds = new THREE.Box3().setFromObject(mainGroup);
         const size = bounds.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z, 0.5);

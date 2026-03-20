@@ -33,6 +33,10 @@
         inset 0 -32px 60px rgba(148, 163, 184, 0.1);
 }
 
+.cfg-viewer--fallback {
+    cursor: default;
+}
+
 .cfg-viewer:active {
     cursor: grabbing;
 }
@@ -69,6 +73,31 @@
     height: 100% !important;
     position: relative;
     z-index: 1;
+}
+
+.cfg-viewer-fallback {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    height: 100%;
+    padding: 2rem;
+    text-align: center;
+    color: var(--clr-text-secondary);
+}
+
+.cfg-viewer-fallback strong {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: var(--clr-text);
+    font-family: var(--ff-heading);
+    font-size: var(--fs-lg);
+}
+
+.cfg-viewer-fallback p {
+    max-width: 28rem;
+    margin: 0 auto;
+    line-height: 1.7;
 }
 
 .cfg-viewer-hint {
@@ -123,6 +152,13 @@
     box-shadow: 0 6px 12px rgba(59, 130, 246, 0.12);
 }
 
+.cfg-btn-icon:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .cfg-btn-icon.active {
     background: var(--clr-accent);
     border-color: var(--clr-accent);
@@ -136,27 +172,20 @@
 
 /* ---- CSS2D Dimension Labels ---- */
 .dim-label {
-    background: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.92);
     color: #2563EB;
     font-family: var(--ff-heading), 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.01em;
     padding: 6px 14px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.85);
+    border: null;
     white-space: nowrap;
-    line-height: 1.4;
+    line-height: 1.3;
     pointer-events: none;
-    backdrop-filter: blur(10px);
-    box-shadow:
-        0 14px 32px rgba(37, 99, 235, 0.16),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.dim-label-h {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12), 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 /* ---- CSS2D Layer Labels (exploded view) ---- */
@@ -475,6 +504,11 @@
     animation: slideIn 0.4s var(--ease-smooth);
 }
 
+.cfg-suggestion.is-error {
+    background: linear-gradient(135deg, rgba(254, 242, 242, 1) 0%, rgba(254, 226, 226, 0.65) 100%);
+    border-color: rgba(220, 38, 38, 0.18);
+}
+
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -500,6 +534,33 @@
     margin-top: 0.75rem;
     padding-top: 0.75rem;
     border-top: 1px solid rgba(220, 38, 38, 0.1);
+}
+
+.cfg-form-feedback {
+    margin-bottom: 0.9rem;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-sm);
+    line-height: 1.6;
+    border: 1px solid transparent;
+}
+
+.cfg-form-feedback.is-error {
+    color: #991B1B;
+    background: rgba(254, 242, 242, 0.95);
+    border-color: rgba(248, 113, 113, 0.28);
+}
+
+.cfg-form-feedback.is-success {
+    color: #166534;
+    background: rgba(240, 253, 244, 0.95);
+    border-color: rgba(74, 222, 128, 0.28);
+}
+
+.cfg-form-group input.is-invalid,
+.cfg-form-group select.is-invalid {
+    border-color: #EF4444;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.14);
 }
 
 /* CTA Box */

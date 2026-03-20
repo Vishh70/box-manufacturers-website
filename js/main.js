@@ -335,14 +335,19 @@ function initPriceTiers() {
 function initActiveNav() {
   const path = window.location.pathname;
   const fileName = path.split('/').pop() || 'index.html';
+  const routeAliases = {
+    'product-detail.html': 'products.html',
+    'blog-article.html': 'blog.html'
+  };
+  const activeFile = routeAliases[fileName] || fileName;
   
   document.querySelectorAll('.nav a').forEach((link) => {
     const href = link.getAttribute('href');
     if (!href || link.classList.contains('btn')) return;
 
     // Normalize comparison
-    const isHome = (fileName === 'index.html' || fileName === '') && href === 'index.html';
-    const isMatch = href === fileName || isHome;
+    const isHome = activeFile === 'index.html' && href === 'index.html';
+    const isMatch = href === activeFile || isHome;
 
     if (isMatch) {
       link.classList.add('active');
