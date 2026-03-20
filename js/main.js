@@ -291,6 +291,8 @@ function clearFilters() {
   if (noResults) noResults.style.display = 'none';
 }
 
+window.clearFilters = clearFilters;
+
 /* ---- Contact WhatsApp Quote ---- */
 function initContactWhatsApp() {
   const btn = document.getElementById('btnContactWhatsApp');
@@ -321,12 +323,10 @@ function initActiveNav() {
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   document.querySelectorAll('.nav a').forEach((link) => {
     const href = link.getAttribute('href');
-    // Account for WhatsApp links in nav
-    if (href === currentPage || (currentPage === 'contact.html' && href.includes('wa.me'))) {
+    if (href === currentPage) {
       link.classList.add('active');
     } else if (link.classList.contains('active') && !link.classList.contains('btn')) {
-       // Only remove if it's not the current page
-       if (href !== currentPage) link.classList.remove('active');
+      if (href !== currentPage) link.classList.remove('active');
     }
   });
 }
