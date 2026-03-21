@@ -1,52 +1,333 @@
-# 📦 Arti Enterprises - B2B Packaging & 3D Configurator
+# ARTI ENTERPRISES Website
 
-A cutting-edge, highly responsive vanilla web application designed for Arti Enterprises, a leading B2B corrugated box manufacturer. This platform showcases their packaging catalog and features an extremely robust, interactive **Photorealistic 3D Box Configurator** integrated with a streamlined WhatsApp Quotation Lead Generation system.
+[![Vite](https://img.shields.io/badge/Vite-7.3.1-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react&logoColor=111827)](https://react.dev/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES%20Modules-F7DF1E?logo=javascript&logoColor=111827)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Three.js](https://img.shields.io/badge/Three.js-CDN-000000?logo=three.js&logoColor=white)](https://threejs.org/)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com/)
+[![Site Type](https://img.shields.io/badge/Site-Multi--page%20Static-2563EB)](#architecture)
 
----
+Production-focused website for **ARTI ENTERPRISES**, a corrugated box manufacturer in Pune. The project combines a polished marketing site, product catalog, product detail pages, a WebGL-based 3D box configurator, and WhatsApp-first lead generation for B2B packaging inquiries.
 
-## ✨ Core Features
+This repository contains both the website code and a supporting `whatsapp-business/` package used to align website lead capture with catalog, profile, and messaging workflows.
 
-### 1. Photorealistic 3D Box Configurator (`/configurator.html`)
-The crown jewel of the platform, the B2B configuration engine features a fully interactive 3D WebGL viewer built entirely in vanilla Three.js.
-* **Accurate Box Geometry:** Mathematical recreation of Slotted Containers (RSC) with physically accurate folded flaps, thickness dynamics driven by ply type, and dynamically placed dimension UI labels.
-* **Micro-Fiber Texturing:** Custom procedural bump-mapping applies realistic kraft paper fibers, pores, and corrugated fluting directly to the physical 3D materials.
-* **Cinematic Studio Lighting:** Rim lighting, variable focal dropshadows, and realistic fill lighting to achieve a pristine commercial render aesthetic.
-* **Interactive Exploded View:** Smoothly transitions the mesh into an exploded layer view revealing the inner corrugated fluting walls of 3-Ply, 5-Ply, and 7-Ply structures perfectly.
+## Table of Contents
 
-### 2. Multi-Channel WhatsApp Inquiry Hub
-An aggressive, zero-friction lead generation architecture built for immediate B2B sales conversions.
-* **Direct Lead Routing:** Instantly constructs heavily formatted quotation arrays and pre-fills the user's WhatsApp directly connecting them to the sales team.
-* **Granular Configurations:** Converts 3D box attributes (Length, Width, Height, GSM, Ply, Target Weight) directly into a standardized WhatsApp manifest for the agents to read.
-* **Specialized Tiers:** Intelligent quote generation supporting E-Commerce lightweight dispatch and Industrial Export heavy-duty configurations.
+- [Overview](#overview)
+- [Feature Highlights](#feature-highlights)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Pages and User Flow](#pages-and-user-flow)
+- [Local Development](#local-development)
+- [Build and Deployment](#build-and-deployment)
+- [Project Structure](#project-structure)
+- [WhatsApp Business Package](#whatsapp-business-package)
+- [Customization Guide](#customization-guide)
+- [Preview Assets](#preview-assets)
+- [Roadmap](#roadmap)
+- [License](#license)
 
-### 3. High-Performance Architecture
-* **0 Dependencies (Vanilla):** No bloated frameworks. Everything is written using pure Vanilla JS, raw CSS `var()` token systems, and semantic HTML5 for blazingly fast load times and maximum SEO dominance.
-* **CSS Modern Aesthetics:** Features glassmorphism modals, dynamic micro-animations, premium B2B blue/amber branding, and flawless mobile-first responsiveness.
-* **Dynamic Hydration:** Reusable HTML utility components injected purely via the DOM.
+## Overview
 
----
+This project powers the public web presence for ARTI ENTERPRISES and is structured as a **hybrid Vite multi-page site**:
 
-## 🛠️ Tech Stack & Libraries
-* **Frontend Execution:** HTML5, Vanilla JavaScript (ES11+), Vanilla CSS3.
-* **3D Rendering Engine:** `Three.js` (WebGL) + `CSS2DRenderer` for non-clipping HTML dimension labels.
-* **Animations:** Native CSS Transitions and `requestAnimationFrame()` inertia smoothing.
-* **Icons:** Lucide Icons (client-side script injection).
-* **Live Chat & Bot Integration:** Tidio Live Chat Widget.
+- The homepage is bootstrapped through React.
+- The homepage content itself is injected from a raw HTML template.
+- Legacy browser scripts handle shared interactions, navigation behavior, WhatsApp CTA hydration, and the hero/configurator rendering.
+- Additional site pages remain standalone HTML entrypoints handled by Vite during build.
 
----
+The result is a practical setup for a business site that needs static deployment, custom interactions, and a richer configurator without converting the entire codebase into a fully componentized SPA.
 
-## 🚀 How to Run Locally
+## Feature Highlights
 
-Because the 3D Viewer relies on cross-origin texture loading and module capabilities, it must be run on a local development server (not via `file://`).
+### Marketing and conversion pages
 
-1. Open this repository in **Visual Studio Code**.
-2. Install the **Live Server** extension by Ritwick Dey.
-3. Right-click on `index.html` (or `configurator.html`) and select **"Open with Live Server"**.
-4. The site will instantly spin up on `http://127.0.0.1:5500`.
+- Premium homepage for corrugated packaging and manufacturing positioning
+- About, contact, privacy, and terms pages
+- Blog listing and article pages for packaging education and SEO
 
----
+### Product catalog flows
 
-## ☁️ Deployment
-The project is completely static and ready for instant deployment. It is currently configured for autonomous edge deployment via **Vercel** via GitHub integration. Every push to the `main` branch automatically builds and scales the application globally.
+- Product listing page with client-side filters
+- Product detail page backed by centralized product data
+- Product categories covering 3 Ply, 5 Ply, 7 Ply, die-cut, printed, food-grade, export, and e-commerce packaging
 
-*Designed specifically to elevate manufacturing presentation and B2B conversion metrics.*
+### 3D box configurator
+
+- Interactive box viewer rendered with Three.js
+- Adjustable dimensions, ply selection, exploded layer view, and spec generation
+- Quote handoff directly into WhatsApp with structured configuration details
+
+### Lead generation and business ops alignment
+
+- WhatsApp CTAs hydrated across pages using shared site configuration
+- Contact and quotation messaging built around business-friendly formatting
+- Separate WhatsApp Business documentation package for profile, catalog, labels, and workflow setup
+
+### Static delivery readiness
+
+- Vite multi-page build
+- Static asset copy step into `dist/`
+- Ready for Vercel deployment with an additional Cloudflare-style config present in the repo
+
+## Architecture
+
+The repo is not a pure vanilla static site anymore, and it is not a full React app either. The current implementation is intentionally hybrid.
+
+### How the homepage works
+
+1. `index.html` loads the React entrypoint from `src/main.jsx`.
+2. `src/main.jsx` renders `src/App.jsx`.
+3. `src/App.jsx` injects the homepage markup from `src/templates/home.html`.
+4. After render, it loads browser scripts such as:
+   - `js/main.js`
+   - `js/hero3d.js`
+5. Those scripts initialize shared site behavior and the visual hero experience.
+
+### How the rest of the site works
+
+- Vite is configured as a **multi-page build** in `vite.config.js`.
+- Root HTML files such as `about.html`, `products.html`, `configurator.html`, and `contact.html` are treated as first-class page entrypoints.
+- Static folders and assets are copied into the build output using a custom Vite plugin:
+  - `css/`
+  - `js/`
+  - `images/`
+  - `robots.txt`
+  - `sitemap.xml`
+
+### Why this setup exists
+
+This structure lets the site keep simple static pages where that is practical, while still using React where it adds value for homepage composition and Vite bundling. It also preserves the existing investment in browser-side scripts for navigation, data hydration, filtering, and 3D rendering.
+
+## Tech Stack
+
+### Package-managed dependencies
+
+- **Vite** for local development, bundling, and multi-page builds
+- **React 18** and **React DOM** for the homepage entry shell
+
+### Browser-side runtime
+
+- **JavaScript (ES modules + legacy browser scripts)**
+- **HTML5**
+- **CSS3**
+- **Three.js** loaded via CDN for the hero experience and 3D configurator
+- **GSAP** loaded via CDN where homepage animation support is needed
+
+### Deployment and hosting
+
+- **Vercel** configured via `vercel.json`
+- Additional static hosting configuration via `wrangler.jsonc`
+
+## Pages and User Flow
+
+### Main pages
+
+| Page | Purpose |
+| --- | --- |
+| `index.html` | Homepage with brand positioning, trust signals, featured products, and lead generation CTAs |
+| `products.html` | Product catalog with filters and category browsing |
+| `product-detail.html` | Product-specific detail view and quotation path |
+| `configurator.html` | Interactive 3D box configuration and spec/quote workflow |
+| `about.html` | Company overview and manufacturing credibility |
+| `contact.html` | Contact and inquiry page |
+| `blog.html` | Packaging content index |
+| `blog-article.html` | Individual article page |
+| `privacy.html` | Privacy policy |
+| `terms.html` | Terms of service |
+
+### Typical user flow
+
+1. Visitor lands on `index.html` from search, referral, or direct traffic.
+2. They review the company offer and move to either:
+   - `products.html` to browse standard packaging options, or
+   - `configurator.html` to define custom box requirements.
+3. Shared CTAs route the visitor into WhatsApp with preformatted messages.
+4. ARTI ENTERPRISES can continue the quotation workflow from WhatsApp using the business assets documented in `whatsapp-business/`.
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 18+ recommended
+- npm
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Start the Vite development server
+
+```bash
+npm run dev
+```
+
+By default, the project is configured to run on:
+
+```text
+http://localhost:3000
+```
+
+The `dev` script binds to `0.0.0.0`, which is useful for local network testing.
+
+### Build for production
+
+```bash
+npm run build
+```
+
+### Preview the production build
+
+```bash
+npm run preview
+```
+
+### Development notes
+
+- The homepage and configurator depend on browser-loaded libraries such as Three.js and GSAP from CDNs.
+- Static assets are expected to remain in the existing root-level folders used by the Vite copy step.
+- Vite is the canonical local workflow for this repo.
+
+## Build and Deployment
+
+### Output
+
+- Production assets are generated in `dist/`.
+
+### Vercel
+
+`vercel.json` currently defines:
+
+- framework: `vite`
+- build command: `npm run build`
+- output directory: `dist`
+
+This means the repo is ready for GitHub-connected Vercel deployment as a static build output.
+
+### Additional hosting config
+
+`wrangler.jsonc` is also present and points at the project directory as a static asset source. That suggests the repo has also been prepared, at least partially, for a Cloudflare-style static deployment workflow.
+
+The README intentionally does not overstate the Cloudflare path beyond what is visible in the repo configuration.
+
+## Project Structure
+
+```text
+box-manufacturers-website/
+├── css/
+│   ├── configurator.css
+│   └── styles.css
+├── images/
+├── js/
+│   ├── configurator.js
+│   ├── hero3d.js
+│   ├── index-page.js
+│   ├── main.js
+│   ├── product-data.js
+│   ├── product-detail-page.js
+│   └── site-config.js
+├── src/
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── templates/
+│       └── home.html
+├── whatsapp-business/
+│   ├── assets/
+│   ├── business-profile.md
+│   ├── catalog.json
+│   ├── catalog.md
+│   ├── messaging-and-workflow.md
+│   └── README.md
+├── dist/
+├── about.html
+├── blog-article.html
+├── blog.html
+├── configurator.html
+├── contact.html
+├── index.html
+├── package.json
+├── privacy.html
+├── product-detail.html
+├── products.html
+├── robots.txt
+├── sitemap.xml
+├── terms.html
+├── vercel.json
+├── vite.config.js
+└── wrangler.jsonc
+```
+
+### Folder responsibilities
+
+- `src/`: React entrypoint and homepage template composition
+- `js/`: shared site logic, product data, configurator logic, and page behaviors
+- `css/`: global and configurator-specific styling
+- `images/`: product imagery, visual assets, and favicon
+- `whatsapp-business/`: operational documentation for WhatsApp Business setup and handling
+- root HTML files: page entrypoints for the multi-page build
+- `dist/`: generated output after `npm run build`
+
+## WhatsApp Business Package
+
+The `whatsapp-business/` directory is not runtime application code. It is a supporting operations package for the business team.
+
+It contains:
+
+- business profile copy
+- catalog content
+- structured catalog JSON
+- quick reply and label workflow documentation
+- business messaging guidance
+- profile avatar assets
+
+This package complements the website’s lead-generation behavior:
+
+- the website sends visitors into WhatsApp using shared links and prefilled messages
+- the business package documents how ARTI ENTERPRISES should operate that WhatsApp channel consistently after the lead arrives
+
+Start with:
+
+- `whatsapp-business/README.md`
+
+## Customization Guide
+
+If you need to update business content or maintain the site, these are the main touchpoints:
+
+| File | Responsibility |
+| --- | --- |
+| `js/site-config.js` | Business name, phone, email, WhatsApp settings, address, and shared site metadata |
+| `src/templates/home.html` | Homepage markup and content blocks |
+| `js/main.js` | Shared site interactivity, nav state, WhatsApp link hydration, filtering, and page-level initialization |
+| `js/product-data.js` | Product catalog content and quote-related product metadata |
+| `js/product-detail-page.js` | Product detail rendering behavior |
+| `js/configurator.js` | 3D configurator logic, quote generation, and viewer interactions |
+| `js/hero3d.js` | Homepage 3D hero behavior |
+| `css/styles.css` | Global site styling |
+| `css/configurator.css` | Configurator and related visual styling |
+
+## Preview Assets
+
+The repository already includes usable visual assets in `images/`, including:
+
+- `images/hero-banner.png`
+- `images/about-factory.png`
+- `images/product-boxes.png`
+- `images/product-3ply.png`
+- `images/product-5ply.png`
+- `images/product-7ply.png`
+
+If you want a more polished GitHub landing experience later, the next step is to add actual site screenshots or a short GIF and reference them from this section.
+
+## Roadmap
+
+- Consolidate more legacy browser scripts into a clearer module structure
+- Document the product data model more explicitly
+- Add automated validation or test coverage for core flows
+- Expand deployment notes if Cloudflare deployment becomes an active path
+- Add real homepage/configurator screenshots to the README
+
+## License
+
+This repository is currently marked as **ISC** in `package.json`.
