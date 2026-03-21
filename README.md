@@ -9,24 +9,15 @@
 
 Production-focused website for **ARTI ENTERPRISES**, a corrugated box manufacturer in Pune. The project combines a polished marketing site, product catalog, product detail pages, a WebGL-based 3D box configurator, and WhatsApp-first lead generation for B2B packaging inquiries.
 
+> Hybrid Vite multi-page website for a corrugated packaging manufacturer, including marketing pages, product flows, and a Three.js-powered 3D box experience.
+
 This repository contains both the website code and a supporting `whatsapp-business/` package used to align website lead capture with catalog, profile, and messaging workflows.
-
-## At a Glance
-
-| Item | Details |
-| --- | --- |
-| Business | ARTI ENTERPRISES |
-| Domain target | `https://arti-enterprises.vercel.app` |
-| Primary audience | B2B packaging buyers, wholesalers, factories, exporters, e-commerce brands |
-| Product focus | 3 Ply, 5 Ply, 7 Ply, die-cut, printed, food-grade, export, and e-commerce corrugated boxes |
-| App style | Hybrid React + static multi-page site |
-| Core conversion path | Product browse or 3D configurator -> WhatsApp inquiry |
-| Build tool | Vite |
-| Output | Static `dist/` bundle |
 
 ## Table of Contents
 
 - [At a Glance](#at-a-glance)
+- [Preview](#preview)
+- [Three.js Showcase](#threejs-showcase)
 - [Overview](#overview)
 - [Feature Highlights](#feature-highlights)
 - [Business and Product Scope](#business-and-product-scope)
@@ -41,9 +32,80 @@ This repository contains both the website code and a supporting `whatsapp-busine
 - [Customization Guide](#customization-guide)
 - [SEO and Metadata](#seo-and-metadata)
 - [Known Constraints](#known-constraints)
-- [Preview Assets](#preview-assets)
+- [Preview Assets and Screenshot Notes](#preview-assets-and-screenshot-notes)
 - [Roadmap](#roadmap)
 - [License](#license)
+
+## At a Glance
+
+| Item | Details |
+| --- | --- |
+| Business | ARTI ENTERPRISES |
+| Domain target | `https://arti-enterprises.vercel.app` |
+| Primary audience | B2B packaging buyers, wholesalers, factories, exporters, e-commerce brands |
+| Product focus | 3 Ply, 5 Ply, 7 Ply, die-cut, printed, food-grade, export, and e-commerce corrugated boxes |
+| App style | Hybrid React + static multi-page site |
+| Major showcase feature | Three.js-based hero and 3D box configurator |
+| Core conversion path | Product browse or 3D configurator -> WhatsApp inquiry |
+| Business workflow support | WhatsApp-first lead handling with supporting business docs |
+| Build tool | Vite |
+| Output | Static `dist/` bundle |
+
+## Preview
+
+Main brand and product visuals already available in the repository:
+
+![ARTI ENTERPRISES hero banner](images/hero-banner.png)
+
+Homepage/manufacturing credibility support:
+
+![ARTI ENTERPRISES factory view](images/about-factory.png)
+
+Product-focused corrugated packaging preview:
+
+![ARTI ENTERPRISES corrugated box product preview](images/product-boxes.png)
+
+These are repo-hosted assets used to give the README a proper GitHub presentation without depending on external links or missing screenshots.
+
+### Future screenshots
+
+The current README intentionally uses repo assets, not fake UI screenshots. If you want a more realistic GitHub showcase later, add real captured screenshots for:
+
+- homepage full layout
+- configurator viewer in use
+- product listing page
+- product detail page
+
+## Three.js Showcase
+
+This project uses **Three.js** for both the homepage visual layer and the interactive configurator workflow. The 3D experience is a major product differentiator in the repo and deserves to be treated as a first-class feature.
+
+![Three.js-powered packaging hero preview](images/hero-banner.png)
+
+### Used in the homepage
+
+- visual 3D corrugated box presentation
+- branded hero experience
+- motion-driven packaging showcase
+
+### Used in the configurator
+
+- interactive 3D box rendering
+- dimension-driven box geometry
+- ply-specific structure visualization
+- exploded layer view
+- WhatsApp quote handoff from configured parameters
+
+### Runtime files
+
+- `js/hero3d.js`
+- `js/configurator.js`
+
+### Current implementation notes
+
+- Three.js is currently loaded through browser/CDN scripts rather than bundled npm imports in the main site runtime.
+- The 3D layer is browser-script driven and works alongside the hybrid React + static page architecture.
+- The configurator includes runtime fallback behavior for cases where the viewer cannot initialize normally.
 
 ## Overview
 
@@ -58,35 +120,36 @@ The result is a practical setup for a business site that needs static deployment
 
 ## Feature Highlights
 
-### Marketing and conversion pages
+### Business website features
 
-- Premium homepage for corrugated packaging and manufacturing positioning
-- About, contact, privacy, and terms pages
-- Blog listing and article pages for packaging education and SEO
+- premium homepage for corrugated packaging and manufacturing positioning
+- about, contact, privacy, and terms pages
+- blog listing and article pages for packaging education and SEO
 
-### Product catalog flows
+### Product and content features
 
-- Product listing page with client-side filters
-- Product detail page backed by centralized product data
-- Product categories covering 3 Ply, 5 Ply, 7 Ply, die-cut, printed, food-grade, export, and e-commerce packaging
+- product listing page with client-side filters
+- product detail page backed by centralized product data
+- product categories covering 3 Ply, 5 Ply, 7 Ply, die-cut, printed, food-grade, export, and e-commerce packaging
 
-### 3D box configurator
+### 3D and Three.js features
 
-- Interactive box viewer rendered with Three.js
-- Adjustable dimensions, ply selection, exploded layer view, and spec generation
-- Quote handoff directly into WhatsApp with structured configuration details
+- interactive box viewer rendered with Three.js
+- adjustable dimensions, ply selection, exploded layer view, and spec generation
+- homepage hero visual supported by a dedicated 3D runtime
 
-### Lead generation and business ops alignment
+### Lead generation features
 
 - WhatsApp CTAs hydrated across pages using shared site configuration
-- Contact and quotation messaging built around business-friendly formatting
-- Separate WhatsApp Business documentation package for profile, catalog, labels, and workflow setup
+- contact and quotation messaging built around business-friendly formatting
+- configurator-to-WhatsApp quote handoff
+- separate WhatsApp Business documentation package for profile, catalog, labels, and workflow setup
 
-### Static delivery readiness
+### Deployment and delivery features
 
 - Vite multi-page build
-- Static asset copy step into `dist/`
-- Ready for Vercel deployment with an additional Cloudflare-style config present in the repo
+- static asset copy step into `dist/`
+- ready for Vercel deployment with an additional Cloudflare-style config present in the repo
 
 ## Business and Product Scope
 
@@ -115,7 +178,7 @@ This matters for future maintenance because product copy, quote templates, CTA w
 
 The repo is not a pure vanilla static site anymore, and it is not a full React app either. The current implementation is intentionally hybrid.
 
-### How the homepage works
+### Rendering architecture
 
 1. `index.html` loads the React entrypoint from `src/main.jsx`.
 2. `src/main.jsx` renders `src/App.jsx`.
@@ -125,7 +188,7 @@ The repo is not a pure vanilla static site anymore, and it is not a full React a
    - `js/hero3d.js`
 5. Those scripts initialize shared site behavior and the visual hero experience.
 
-### How the rest of the site works
+### Static build pipeline
 
 - Vite is configured as a **multi-page build** in `vite.config.js`.
 - Root HTML files such as `about.html`, `products.html`, `configurator.html`, and `contact.html` are treated as first-class page entrypoints.
@@ -135,6 +198,14 @@ The repo is not a pure vanilla static site anymore, and it is not a full React a
   - `images/`
   - `robots.txt`
   - `sitemap.xml`
+
+### 3D runtime notes
+
+- homepage hero behavior is handled by `js/hero3d.js`
+- configurator runtime is handled by `js/configurator.js`
+- Three.js is loaded through CDN/browser scripts in the current runtime model
+- the configurator supports interaction, spec generation, and viewer fallback behavior
+- configured values can be routed into WhatsApp quotation messages
 
 ### Why this setup exists
 
@@ -183,7 +254,7 @@ This structure lets the site keep simple static pages where that is practical, w
 ### Deployment and hosting
 
 - **Vercel** configured via `vercel.json`
-- Additional static hosting configuration via `wrangler.jsonc`
+- additional static hosting configuration via `wrangler.jsonc`
 
 ### Repo dependencies worth noting
 
@@ -578,27 +649,46 @@ If you make content or URL changes, update these files together rather than trea
 - `dist/` exists in the repo, but it should still be treated as generated output from `npm run build`.
 - The README does not assume that every installed dependency is part of an active documented developer workflow.
 
-## Preview Assets
+## Preview Assets and Screenshot Notes
 
-The repository already includes usable visual assets in `images/`, including:
+### Embedded now
+
+The README currently embeds these repo-hosted images:
 
 - `images/hero-banner.png`
 - `images/about-factory.png`
 - `images/product-boxes.png`
+
+### Available in the repo
+
+Other useful existing visual assets include:
+
+- `images/stack_of_corrugated_boxes.png`
+- `images/Custom Printed Box.jpg`
 - `images/product-3ply.png`
 - `images/product-5ply.png`
 - `images/product-7ply.png`
+- `images/product-printed.png`
 
-If you want a more polished GitHub landing experience later, the next step is to add actual site screenshots or a short GIF and reference them from this section.
+### Recommended future screenshots
+
+If you want a stronger GitHub showcase later, add real screenshots for:
+
+- homepage full layout
+- configurator viewer state
+- product listing grid
+- product detail page
+
+The README intentionally does not label current repo assets as live UI screenshots when they are product/brand visuals instead.
 
 ## Roadmap
 
-- Consolidate more legacy browser scripts into a clearer module structure
-- Document the product data model more explicitly
-- Add automated validation or test coverage for core flows
-- Add a documented browser automation or QA flow if `puppeteer-core` becomes part of active maintenance
-- Expand deployment notes if Cloudflare deployment becomes an active path
-- Add real homepage/configurator screenshots to the README
+- consolidate more legacy browser scripts into a clearer module structure
+- document the product data model more explicitly
+- add automated validation or test coverage for core flows
+- add a documented browser automation or QA flow if `puppeteer-core` becomes part of active maintenance
+- expand deployment notes if Cloudflare deployment becomes an active path
+- add real homepage/configurator screenshots to the README
 
 ## License
 

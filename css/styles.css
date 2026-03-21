@@ -2328,39 +2328,6 @@ button {
 /* Responsive fixes */
 @media (max-width: 768px) {
   .inquiry-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ---- Mobile Specific Fixes ---- */
-@media (max-width: 600px) {
-  .inquiry-hub-title {
-    font-size: 1.5rem !important;
-  }
-  
-  /* Fix for filter overlap with WA icon */
-  .filter-sidebar {
-    padding-bottom: 100px;
-  }
-
-  /* Hide floating widgets when mobile menu is open */
-  body.menu-open .wa-float {
-    display: none !important;
-  }
-}
-
-/* ---- Hero Variations ---- */
-
-/* 1. Premium Light Theme */
-.hero--premium-light {
-  background: #f8fafc;
-  color: #0f172a;
-}
-.hero--premium-light .hero-bg-elements .hero-glow {
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
-}
-.hero--premium-light .hero-bg-elements .hero-grid-overlay {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
 }
 .hero--premium-light h1 {

@@ -685,12 +685,22 @@
 }
 
 @media (max-width: 768px) {
+    .cfg-layout {
+        gap: 1.5rem;
+    }
+
     .cfg-viewer {
         height: 320px;
+        margin-bottom: 1rem;
+    }
+
+    .cfg-section {
+        padding: 1.5rem 1.25rem;
     }
 
     .cfg-ply-buttons {
         grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
 
     .cfg-table th,
@@ -707,5 +717,10 @@
     .layer-label {
         font-size: 9px;
         padding: 3px 8px;
+    }
+
+    /* Add extra space at the bottom to prevent widget overlap */
+    .cfg-controls-panel {
+        padding-bottom: 80px;
     }
 }
