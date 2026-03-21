@@ -949,8 +949,11 @@
             else if (weight <= 40) { rPly = '5-Ply'; rSize = '18x12x12 in'; rMargin = 'Heavy Duty'; }
             else { rPly = '7-Ply'; rSize = '22x22x30 in'; rMargin = 'Export Grade'; }
 
-            const maxW = state.ply === 3 ? 15 : state.ply === 5 ? 40 : 200;
-            if (weight > maxW) warning = `Selection may be weak for ${weight} kg with the currently selected ply.`;
+            const recommendedPly = parseInt(rPly, 10);
+            const selectedMaxWeight = state.ply === 3 ? 15 : state.ply === 5 ? 40 : 200;
+            if (weight > selectedMaxWeight && state.ply !== recommendedPly) {
+                warning = `The current ${state.ply}-ply selection may be weak for ${weight} kg. Switch to the suggested ${rPly} setup.`;
+            }
             renderSuggestionResult('Recommended Box Setup', [
                 `Suggested Ply: ${rPly}`,
                 `Typical Size: ${rSize}`,

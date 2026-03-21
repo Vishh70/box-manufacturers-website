@@ -24,16 +24,19 @@ export default function App() {
 
     async function initLegacyScripts() {
       try {
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'lib-three');
-        if (cancelled) return;
-
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js', 'lib-gsap');
+        await loadScript('/js/site-config.js', 'site-config');
         if (cancelled) return;
 
         await loadScript('/js/main.js', 'site-main');
         if (cancelled) return;
 
-        await loadScript('/js/hero3d.js', 'site-hero3d');
+        const heroCanvas = document.getElementById('hero3dCanvas');
+        if (heroCanvas && getComputedStyle(heroCanvas).display !== 'none') {
+          await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'lib-three');
+          if (cancelled) return;
+
+          await loadScript('/js/hero3d.js', 'site-hero3d');
+        }
       } catch (error) {
         console.error(error);
       }
@@ -48,4 +51,3 @@ export default function App() {
 
   return <div dangerouslySetInnerHTML={{ __html: homeMarkup }} />;
 }
-
