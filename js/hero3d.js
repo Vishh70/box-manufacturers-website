@@ -1,419 +1,356 @@
 /**
  * @file Home Page 3D Hero Animation
- * @description Auto-rotating Three.js box with periodic exploded layer reveal.
- *              Respects prefers-reduced-motion and pauses when tab is hidden.
- * @author ARTI ENTERPRISES
- * @version 1.1.0
- * @requires THREE.js r128, GSAP (optional, for exploded animation)
+ * @description Renders a premium closed corrugated box with a subtle lid reveal.
  */
 
 (function () {
     'use strict';
 
-    /* ── SAFETY: reduced motion preference ── */
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    /* ── STATE ── */
     const S = {
-        isExploded: false,
         isUserInteracting: false,
         isMobile: window.innerWidth < 768,
         isVisible: true,
-        rotY: 0.5,
-        rotX: -0.25,
-        targetRotY: 0.5,
-        targetRotX: -0.25,
         isDragging: false,
-        prevMouse: { x: 0, y: 0 }
+        prevMouse: { x: 0, y: 0 },
+        baseRotX: -0.42,
+        baseRotY: 0.82,
+        rotX: -0.42,
+        rotY: 0.82,
+        targetRotX: -0.42,
+        targetRotY: 0.82,
+        dragOffsetX: 0,
+        dragOffsetY: 0
     };
 
-    const ROTATION_SPEED = 0.003;  // radians per frame (~20s full turn)
-    const DAMPING = 0.06;
-    const EXPLODE_INTERVAL = 8000; // ms (more frequent so users see it)
-    const EXPLODE_HOLD = 3000;      // ms (hold for 3 seconds)
+    const DAMPING = 0.08;
+    const ROTATION_SWAY_X = 0.05;
+    const ROTATION_SWAY_Y = 0.18;
+    const DRAG_RETURN = 0.92;
+    const DRAG_LIMIT_X = 0.28;
+    const DRAG_LIMIT_Y = 0.38;
+    const REVEAL_CYCLE_MS = 9500;
+    const REVEAL_PEAK = 0.14;
 
-    let scene, camera, renderer, boxGroup;
-    let topLiner, fluteMesh, bottomLiner;
-    let topLinerBaseY, fluteBaseY, bottomLinerBaseY;
-    let labelEls = [];
-    let explodeTimeline = null;
-    let explodeTimer = null;
     let container = null;
+    let scene = null;
+    let camera = null;
+    let renderer = null;
+    let boxGroup = null;
+    let lidGroup = null;
+    let insertPanel = null;
+    let insertMaterial = null;
     let animFrameId = null;
+    let animationStart = 0;
+    let bodyBaseY = -0.08;
+    let lidBaseY = 0.25;
 
-    /* ── INIT ── */
     function init() {
         container = document.getElementById('hero3dCanvas');
-        if (!container) return;
+        if (!container || typeof THREE === 'undefined') return;
 
-        try {
-            setupScene();
-            buildBox();
-            renderOnce(); // first frame immediately, no blank
+        setupScene();
+        buildBox();
+        renderOnce();
 
-            if (!prefersReducedMotion) {
-                startLoop();
-                if (!S.isMobile) {
-                    scheduleExplode();
-                }
-                setupInteraction();
-            }
-
-            setupResizeObserver();
-            setupVisibilityAPI();
-        } catch (e) {
-            console.warn('Hero 3D: init failed', e);
+        if (!prefersReducedMotion) {
+            startLoop();
+            setupInteraction();
         }
+
+        setupResizeObserver();
+        setupVisibilityAPI();
     }
 
-    /* ── KRAFT TEXTURE ── */
     function createKraftTexture() {
-        const sz = 256;
-        const c = document.createElement('canvas');
-        c.width = sz; c.height = sz;
-        const ctx = c.getContext('2d');
-        ctx.fillStyle = '#c4a06a';
-        ctx.fillRect(0, 0, sz, sz);
+        const size = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
 
-        for (let i = 0; i < 8000; i++) {
-            const x = Math.random() * sz;
-            const y = Math.random() * sz;
-            const len = 2 + Math.random() * 5;
-            const ang = (Math.random() - 0.5) * 0.4;
-            const b = 150 + Math.floor(Math.random() * 50);
-            ctx.strokeStyle = `rgba(${b},${b - 20},${b - 50},${0.06 + Math.random() * 0.1})`;
-            ctx.lineWidth = 0.5 + Math.random() * 0.5;
+        ctx.fillStyle = '#c7a56d';
+        ctx.fillRect(0, 0, size, size);
+
+        for (let i = 0; i < 11000; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            const len = 2 + Math.random() * 6;
+            const angle = (Math.random() - 0.5) * 0.65;
+            const base = 142 + Math.floor(Math.random() * 38);
+            ctx.strokeStyle = `rgba(${base},${base - 18},${base - 44},${0.06 + Math.random() * 0.12})`;
+            ctx.lineWidth = 0.4 + Math.random() * 0.7;
             ctx.beginPath();
             ctx.moveTo(x, y);
-            ctx.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+            ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
             ctx.stroke();
         }
 
-        const tex = new THREE.CanvasTexture(c);
-        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        tex.repeat.set(2, 2);
-        return tex;
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(2.2, 2.2);
+        return texture;
     }
 
-    /* ── SCENE ── */
     function setupScene() {
         scene = new THREE.Scene();
-        // Transparent — CSS gradient is the hero background
 
         camera = new THREE.PerspectiveCamera(
-            38,
+            34,
             container.clientWidth / container.clientHeight,
-            0.1, 100
+            0.1,
+            100
         );
-        camera.position.set(2.5, 1.8, 4);
-        camera.lookAt(0, 0, 0);
+        camera.position.set(2.55, 1.6, 4.4);
+        camera.lookAt(0, 0.12, 0);
 
         renderer = new THREE.WebGLRenderer({
             antialias: true,
-            alpha: true   // transparent background
+            alpha: true
         });
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.shadowMap.enabled = !S.isMobile;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.outputEncoding = THREE.sRGBEncoding;
         container.appendChild(renderer.domElement);
 
-        // Ambient — prevent black faces
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        scene.add(new THREE.AmbientLight(0xffffff, 0.56));
 
-        // Key light — top-left
-        const key = new THREE.DirectionalLight(0xffffff, 0.55);
-        key.position.set(-4, 6, 4);
+        const key = new THREE.DirectionalLight(0xfff7ea, 0.92);
+        key.position.set(-3.2, 4.6, 5.2);
         key.castShadow = !S.isMobile;
-        key.shadow.mapSize.set(512, 512);
+        key.shadow.mapSize.set(1024, 1024);
         key.shadow.camera.near = 0.5;
-        key.shadow.camera.far = 15;
+        key.shadow.camera.far = 12;
         key.shadow.camera.left = -3;
         key.shadow.camera.right = 3;
         key.shadow.camera.top = 3;
         key.shadow.camera.bottom = -3;
         scene.add(key);
 
-        // Fill — subtle warm
-        const fill = new THREE.DirectionalLight(0xF0E6D4, 0.2);
-        fill.position.set(3, 1, -2);
+        const fill = new THREE.DirectionalLight(0xd9e8ff, 0.35);
+        fill.position.set(3.5, 1.8, -2.5);
         scene.add(fill);
 
-        // Ground shadow
+        const rim = new THREE.DirectionalLight(0xffffff, 0.25);
+        rim.position.set(0, 3.5, -4.5);
+        scene.add(rim);
+
         if (!S.isMobile) {
-            const gGeo = new THREE.PlaneGeometry(10, 10);
-            const gMat = new THREE.ShadowMaterial({ opacity: 0.06 });
-            const ground = new THREE.Mesh(gGeo, gMat);
+            const ground = new THREE.Mesh(
+                new THREE.PlaneGeometry(9, 9),
+                new THREE.ShadowMaterial({ opacity: 0.11 })
+            );
             ground.rotation.x = -Math.PI / 2;
-            ground.position.y = -1.2;
+            ground.position.y = -1.15;
+            ground.position.z = 0.2;
             ground.receiveShadow = true;
             scene.add(ground);
         }
     }
 
-    /* ── BUILD BOX (3 separable layers) ── */
     function buildBox() {
         boxGroup = new THREE.Group();
 
-        const tex = createKraftTexture();
-
-        const linerMat = new THREE.MeshStandardMaterial({
-            map: tex,
-            color: 0xC4A86B,
-            roughness: 0.8,
-            metalness: 0.0
+        const kraftTexture = createKraftTexture();
+        const kraftMaterial = new THREE.MeshStandardMaterial({
+            map: kraftTexture,
+            color: 0xc7a56d,
+            roughness: 0.82,
+            metalness: 0
         });
-
-        const fluteMat = new THREE.MeshStandardMaterial({
-            color: 0xD4C49A,
+        const darkKraftMaterial = new THREE.MeshStandardMaterial({
+            map: kraftTexture,
+            color: 0xb58f56,
+            roughness: 0.88,
+            metalness: 0
+        });
+        insertMaterial = new THREE.MeshStandardMaterial({
+            color: 0xe3d6b6,
             roughness: 0.9,
-            metalness: 0.0
+            metalness: 0,
+            transparent: true,
+            opacity: prefersReducedMotion ? 0 : 0.02
         });
 
-        const L = 1.6, W = 1.1, linerH = 0.06, fluteH = 0.14;
-        const totalH = linerH * 2 + fluteH;
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.46, 1.18), kraftMaterial);
+        body.position.y = bodyBaseY;
+        body.castShadow = true;
+        body.receiveShadow = true;
+        boxGroup.add(body);
 
-        // Top liner
-        const topGeo = new THREE.BoxGeometry(L, linerH, W);
-        topLiner = new THREE.Mesh(topGeo, linerMat);
-        topLiner.position.y = fluteH / 2 + linerH / 2;
-        topLiner.castShadow = true;
-        topLiner.receiveShadow = true;
-        topLinerBaseY = topLiner.position.y;
+        const cavity = new THREE.Mesh(new THREE.BoxGeometry(1.63, 0.21, 0.96), darkKraftMaterial);
+        cavity.position.set(0, 0.07, 0);
+        cavity.castShadow = true;
+        cavity.receiveShadow = true;
+        boxGroup.add(cavity);
 
-        // Flute (middle)
-        const fluteGeo = createFluteGeometry(L * 0.98, fluteH, W * 0.98);
-        fluteMesh = new THREE.Mesh(fluteGeo, fluteMat);
-        fluteMesh.position.y = 0;
-        fluteMesh.castShadow = true;
-        fluteBaseY = 0;
+        lidGroup = new THREE.Group();
+        lidGroup.position.y = lidBaseY;
 
-        // Bottom liner
-        const botGeo = new THREE.BoxGeometry(L, linerH, W);
-        bottomLiner = new THREE.Mesh(botGeo, linerMat.clone());
-        bottomLiner.position.y = -(fluteH / 2 + linerH / 2);
-        bottomLiner.castShadow = true;
-        bottomLiner.receiveShadow = true;
-        bottomLinerBaseY = bottomLiner.position.y;
+        const lidTop = new THREE.Mesh(new THREE.BoxGeometry(1.86, 0.045, 1.2), kraftMaterial);
+        lidTop.castShadow = true;
+        lidTop.receiveShadow = true;
+        lidGroup.add(lidTop);
 
-        boxGroup.add(topLiner);
-        boxGroup.add(fluteMesh);
-        boxGroup.add(bottomLiner);
+        const seam = new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.012, 0.028), darkKraftMaterial);
+        seam.position.y = 0.02;
+        lidGroup.add(seam);
 
-        // Edge outlines for realism
-        const edgeMat = new THREE.LineBasicMaterial({ color: 0x9B8560, linewidth: 1 });
-        const halfL = L / 2, halfW = W / 2, halfH = totalH / 2;
-        const edges = [
-            [[-halfL, halfH, -halfW], [-halfL, halfH, halfW]],
-            [[halfL, halfH, -halfW], [halfL, halfH, halfW]],
-            [[-halfL, halfH, -halfW], [halfL, halfH, -halfW]],
-            [[-halfL, halfH, halfW], [halfL, halfH, halfW]],
-            [[-halfL, -halfH, -halfW], [-halfL, -halfH, halfW]],
-            [[halfL, -halfH, -halfW], [halfL, -halfH, halfW]],
-            [[-halfL, -halfH, -halfW], [halfL, -halfH, -halfW]],
-            [[-halfL, -halfH, halfW], [halfL, -halfH, halfW]],
-            [[-halfL, -halfH, -halfW], [-halfL, halfH, -halfW]],
-            [[halfL, -halfH, -halfW], [halfL, halfH, -halfW]],
-            [[-halfL, -halfH, halfW], [-halfL, halfH, halfW]],
-            [[halfL, -halfH, halfW], [halfL, halfH, halfW]]
-        ];
-        edges.forEach(([a, b]) => {
-            const g = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(...a), new THREE.Vector3(...b)
-            ]);
-            const line = new THREE.Line(g, edgeMat);
-            boxGroup.add(line);
-        });
+        const frontLip = new THREE.Mesh(new THREE.BoxGeometry(1.86, 0.08, 0.04), darkKraftMaterial);
+        frontLip.position.set(0, -0.04, 0.58);
+        frontLip.castShadow = true;
+        lidGroup.add(frontLip);
 
-        boxGroup.rotation.x = S.rotX;
-        boxGroup.rotation.y = S.rotY;
+        const rearLip = new THREE.Mesh(new THREE.BoxGeometry(1.86, 0.08, 0.04), darkKraftMaterial);
+        rearLip.position.set(0, -0.04, -0.58);
+        rearLip.castShadow = true;
+        lidGroup.add(rearLip);
+
+        boxGroup.add(lidGroup);
+
+        insertPanel = new THREE.Mesh(createCorrugationPanel(1.52, 0.16, 0.82), insertMaterial);
+        insertPanel.position.set(0, 0.08, 0);
+        insertPanel.rotation.x = 0.02;
+        insertPanel.castShadow = true;
+        boxGroup.add(insertPanel);
+
+        addEdgeLines(boxGroup);
+
+        boxGroup.rotation.x = S.baseRotX;
+        boxGroup.rotation.y = S.baseRotY;
+        boxGroup.position.set(0.18, -0.05, 0);
+        boxGroup.scale.set(1.12, 1.12, 1.12);
 
         scene.add(boxGroup);
     }
 
-    /* ── CORRUGATED FLUTE GEOMETRY ── */
-    function createFluteGeometry(w, h, d) {
-        const segs = 40;
-        const rows = 6;
-        const amp = h * 0.35;
-        const freq = 10;
-        const verts = [];
-        const indices = [];
+    function addEdgeLines(target) {
+        const edgeMaterial = new THREE.LineBasicMaterial({
+            color: 0x9d7f4b,
+            transparent: true,
+            opacity: 0.75
+        });
 
-        const halfW = w / 2;
-        const halfD = d / 2;
+        const lineMeshes = [
+            new THREE.LineSegments(
+                new THREE.EdgesGeometry(new THREE.BoxGeometry(1.85, 0.46, 1.18)),
+                edgeMaterial
+            ),
+            new THREE.LineSegments(
+                new THREE.EdgesGeometry(new THREE.BoxGeometry(1.86, 0.045, 1.2)),
+                edgeMaterial
+            )
+        ];
 
-        for (let j = 0; j <= rows; j++) {
-            const z = -halfD + (j / rows) * d;
-            for (let i = 0; i <= segs; i++) {
-                const x = -halfW + (i / segs) * w;
-                const wave = Math.sin((i / segs) * Math.PI * 2 * freq) * amp;
-                verts.push(x, wave, z);
-            }
-        }
+        lineMeshes[0].position.y = bodyBaseY;
+        lineMeshes[1].position.y = lidBaseY;
 
-        for (let j = 0; j < rows; j++) {
-            for (let i = 0; i < segs; i++) {
-                const a = j * (segs + 1) + i;
-                const b = a + 1;
-                const c = a + (segs + 1);
-                const dd = c + 1;
-                indices.push(a, b, c, b, dd, c);
-            }
-        }
-
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-        geo.setIndex(indices);
-        geo.computeVertexNormals();
-        return geo;
-    }
-
-    /* ── LABEL SYNC (3D → 2D projection) ── */
-    function syncLabels() {
-        if (S.isMobile || !labelEls.length) return;
-
-        const layers = [topLiner, fluteMesh, bottomLiner];
-        const w2 = container.clientWidth / 2;
-        const h2 = container.clientHeight / 2;
-
-        layers.forEach((mesh, i) => {
-            if (!labelEls[i]) return;
-            const pos = new THREE.Vector3();
-            mesh.getWorldPosition(pos);
-            // offset label to the right side of the layer
-            pos.x += 1.0;
-            pos.project(camera);
-
-            const x = (pos.x * w2) + w2;
-            const y = -(pos.y * h2) + h2;
-
-            labelEls[i].style.left = x + 'px';
-            labelEls[i].style.top = y + 'px';
+        lineMeshes.forEach(function (mesh) {
+            target.add(mesh);
         });
     }
 
-    /* ── RENDER ── */
+    function createCorrugationPanel(width, height, depth) {
+        const segments = 28;
+        const rows = 4;
+        const amplitude = height * 0.36;
+        const frequency = 8;
+        const vertices = [];
+        const indices = [];
+        const halfW = width / 2;
+        const halfD = depth / 2;
+
+        for (let row = 0; row <= rows; row++) {
+            const z = -halfD + (row / rows) * depth;
+            for (let i = 0; i <= segments; i++) {
+                const x = -halfW + (i / segments) * width;
+                const y = Math.sin((i / segments) * Math.PI * 2 * frequency) * amplitude;
+                vertices.push(x, y, z);
+            }
+        }
+
+        for (let row = 0; row < rows; row++) {
+            for (let i = 0; i < segments; i++) {
+                const a = row * (segments + 1) + i;
+                const b = a + 1;
+                const c = a + segments + 1;
+                const d = c + 1;
+                indices.push(a, b, c, b, d, c);
+            }
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        return geometry;
+    }
+
+    function getRevealAmount(now) {
+        if (prefersReducedMotion || S.isMobile || S.isUserInteracting || !S.isVisible) return 0;
+
+        const elapsed = Math.max(0, now - animationStart);
+        const cycle = (elapsed % REVEAL_CYCLE_MS) / REVEAL_CYCLE_MS;
+        if (cycle < 0.34 || cycle > 0.7) return 0;
+
+        const normalized = (cycle - 0.34) / 0.36;
+        const pulse = Math.sin(normalized * Math.PI);
+        return pulse * REVEAL_PEAK;
+    }
+
+    function updateReveal(now) {
+        if (!lidGroup || !insertPanel || !insertMaterial) return;
+
+        const reveal = getRevealAmount(now);
+        lidGroup.position.y = lidBaseY + reveal * 0.72;
+        lidGroup.rotation.z = reveal * -0.12;
+        lidGroup.rotation.x = reveal * -0.55;
+
+        insertPanel.position.y = 0.08 + reveal * 0.42;
+        insertPanel.rotation.x = 0.02 + reveal * 0.15;
+        insertMaterial.opacity = prefersReducedMotion ? 0 : 0.02 + reveal * 1.9;
+    }
+
     function renderOnce() {
         renderer.render(scene, camera);
     }
 
     function startLoop() {
-        function frame() {
+        animationStart = performance.now();
+
+        function frame(now) {
             animFrameId = requestAnimationFrame(frame);
             if (!S.isVisible) return;
 
-            try {
-                // Auto-rotation (when not user-interacting and not exploded)
-                if (!S.isUserInteracting && !S.isExploded && !prefersReducedMotion) {
-                    S.targetRotY += ROTATION_SPEED;
-                }
+            const swayY = Math.sin(now * 0.00045) * ROTATION_SWAY_Y;
+            const swayX = Math.sin(now * 0.00023) * ROTATION_SWAY_X;
 
-                // Smooth damping
-                S.rotX += (S.targetRotX - S.rotX) * DAMPING;
-                S.rotY += (S.targetRotY - S.rotY) * DAMPING;
-
-                if (boxGroup) {
-                    boxGroup.rotation.x = S.rotX;
-                    boxGroup.rotation.y = S.rotY;
-                }
-
-                syncLabels();
-                renderer.render(scene, camera);
-            } catch (e) {
-                cancelAnimationFrame(animFrameId);
-                console.warn('Hero 3D: render error', e);
+            if (!S.isDragging) {
+                S.dragOffsetX *= DRAG_RETURN;
+                S.dragOffsetY *= DRAG_RETURN;
             }
+
+            S.targetRotX = S.baseRotX + swayX + S.dragOffsetX;
+            S.targetRotY = S.baseRotY + swayY + S.dragOffsetY;
+            S.rotX += (S.targetRotX - S.rotX) * DAMPING;
+            S.rotY += (S.targetRotY - S.rotY) * DAMPING;
+
+            if (boxGroup) {
+                boxGroup.rotation.x = S.rotX;
+                boxGroup.rotation.y = S.rotY;
+            }
+
+            updateReveal(now);
+            renderer.render(scene, camera);
         }
-        frame();
+
+        animFrameId = requestAnimationFrame(frame);
     }
 
-    /* ── GSAP EXPLODED TIMELINE ── */
-    function scheduleExplode() {
-        if (S.isMobile || prefersReducedMotion) return;
-
-        explodeTimer = setTimeout(function runExplode() {
-            if (S.isUserInteracting || !S.isVisible) {
-                explodeTimer = setTimeout(runExplode, 3000);
-                return;
-            }
-            playExplode();
-        }, EXPLODE_INTERVAL);
-    }
-
-    function playExplode() {
-        if (typeof gsap === 'undefined') return;
-
-        S.isExploded = true;
-
-        explodeTimeline = gsap.timeline({
-            onReverseComplete: function () {
-                S.isExploded = false;
-                // schedule next
-                explodeTimer = setTimeout(function () {
-                    if (!S.isUserInteracting && S.isVisible) {
-                        playExplode();
-                    } else {
-                        scheduleExplode();
-                    }
-                }, EXPLODE_INTERVAL);
-            }
-        });
-
-        const GAP = 0.45;
-
-        explodeTimeline
-            .to(topLiner.position, {
-                y: topLinerBaseY + GAP,
-                duration: 0.8,
-                ease: 'power2.out'
-            })
-            .to(bottomLiner.position, {
-                y: bottomLinerBaseY - GAP,
-                duration: 0.8,
-                ease: 'power2.out'
-            }, '<')
-            // Fade in labels
-            .to(labelEls, {
-                opacity: 1,
-                duration: 0.4,
-                stagger: 0.1,
-                ease: 'power1.out'
-            }, '-=0.3')
-            // Hold
-            .to({}, { duration: EXPLODE_HOLD / 1000 })
-            // Reverse
-            .to(labelEls, {
-                opacity: 0,
-                duration: 0.3,
-                ease: 'power1.in'
-            })
-            .to(topLiner.position, {
-                y: topLinerBaseY,
-                duration: 0.7,
-                ease: 'power2.inOut'
-            }, '-=0.1')
-            .to(bottomLiner.position, {
-                y: bottomLinerBaseY,
-                duration: 0.7,
-                ease: 'power2.inOut',
-                onComplete: function () {
-                    S.isExploded = false;
-                    explodeTimer = setTimeout(function () {
-                        if (!S.isUserInteracting && S.isVisible) {
-                            playExplode();
-                        } else {
-                            scheduleExplode();
-                        }
-                    }, EXPLODE_INTERVAL);
-                }
-            }, '<');
-    }
-
-    /* ── USER INTERACTION ── */
     function setupInteraction() {
-        // Hover → pause auto
         container.addEventListener('mouseenter', function () {
             S.isUserInteracting = true;
         });
@@ -423,7 +360,6 @@
             S.isDragging = false;
         });
 
-        // Drag to rotate
         container.addEventListener('pointerdown', function (e) {
             S.isDragging = true;
             S.isUserInteracting = true;
@@ -433,20 +369,20 @@
 
         window.addEventListener('pointermove', function (e) {
             if (!S.isDragging) return;
+
             const dx = e.clientX - S.prevMouse.x;
             const dy = e.clientY - S.prevMouse.y;
-            S.targetRotY += dx * 0.006;
-            S.targetRotX += dy * 0.004;
-            S.targetRotX = Math.max(-1, Math.min(0.6, S.targetRotX));
+            S.dragOffsetY = THREE.MathUtils.clamp(S.dragOffsetY + dx * 0.0035, -DRAG_LIMIT_Y, DRAG_LIMIT_Y);
+            S.dragOffsetX = THREE.MathUtils.clamp(S.dragOffsetX + dy * 0.0025, -DRAG_LIMIT_X, DRAG_LIMIT_X);
             S.prevMouse.x = e.clientX;
             S.prevMouse.y = e.clientY;
         });
 
         window.addEventListener('pointerup', function () {
             S.isDragging = false;
+            S.isUserInteracting = false;
         });
 
-        // Touch support
         container.addEventListener('touchstart', function () {
             S.isUserInteracting = true;
         }, { passive: true });
@@ -456,74 +392,48 @@
         }, { passive: true });
     }
 
-    /* ── RESIZE OBSERVER ── */
+    function onResize() {
+        if (!container || !camera || !renderer) return;
+
+        S.isMobile = window.innerWidth < 768;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+
+        if (S.isMobile) {
+            boxGroup.position.set(0.06, -0.04, 0);
+            boxGroup.scale.set(0.95, 0.95, 0.95);
+        } else {
+            boxGroup.position.set(0.18, -0.05, 0);
+            boxGroup.scale.set(1.12, 1.12, 1.12);
+        }
+
+        renderOnce();
+    }
+
     function setupResizeObserver() {
         if (typeof ResizeObserver === 'undefined') {
             window.addEventListener('resize', onResize);
             return;
         }
 
-        const ro = new ResizeObserver(function () {
-            onResize();
-        });
-        ro.observe(container);
+        const observer = new ResizeObserver(onResize);
+        observer.observe(container);
     }
 
-    function onResize() {
-        if (!container || !camera || !renderer) return;
-        const wasMobile = S.isMobile;
-        S.isMobile = window.innerWidth < 768;
-
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
-
-        // If switched to mobile, kill explode
-        if (!wasMobile && S.isMobile) {
-            if (explodeTimeline) explodeTimeline.kill();
-            if (explodeTimer) clearTimeout(explodeTimer);
-            labelEls.forEach(function (el) { el.style.opacity = '0'; });
-            // Reset layer positions
-            if (topLiner) topLiner.position.y = topLinerBaseY;
-            if (bottomLiner) bottomLiner.position.y = bottomLinerBaseY;
-            S.isExploded = false;
-        }
-
-        // If switched to desktop
-        if (wasMobile && !S.isMobile && !prefersReducedMotion) {
-            scheduleExplode();
-        }
-    }
-
-    /* ── VISIBILITY API ── */
     function setupVisibilityAPI() {
         document.addEventListener('visibilitychange', function () {
             S.isVisible = !document.hidden;
         });
     }
 
-    /* ── COLLECT LABEL ELEMENTS ── */
-    function collectLabels() {
-        if (!container || !container.parentElement) {
-            labelEls = [];
-            return;
-        }
-        labelEls = Array.from(container.parentElement.querySelectorAll('.hero-3d-label'));
-    }
-
-    /* ── BOOT ── */
     function boot() {
-        container = document.getElementById('hero3dCanvas');
-        if (!container) return;
-        collectLabels();
         init();
+        onResize();
     }
 
-    /* ── CLEANUP on page unload (prevent GPU memory leak) ── */
     window.addEventListener('beforeunload', function () {
         if (animFrameId) cancelAnimationFrame(animFrameId);
-        if (explodeTimer) clearTimeout(explodeTimer);
-        if (explodeTimeline && explodeTimeline.kill) explodeTimeline.kill();
         if (renderer) {
             renderer.dispose();
             renderer.forceContextLoss();
@@ -535,5 +445,4 @@
     } else {
         boot();
     }
-
 })();
