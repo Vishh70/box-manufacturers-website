@@ -1,256 +1,269 @@
 /**
- * @file Home Page 3D Hero Animation
- * @description Renders a hyper-realistic corrugated RSC box with proper flaps,
- *              kraft paper texture, corrugation details, fold creases, and tape.
+ * @file Home Page 3D Hero Animation - Hyper-Realistic v3
+ * @description Renders a photorealistic corrugated box with physical thickness,
+ *              beveled edges, PBR materials, procedural HDRI lighting,
+ *              and advanced contact shadows.
  */
 
 (function () {
     'use strict';
 
+    if (typeof THREE === 'undefined') return;
+
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // --- Configuration ---
     const S = {
         isUserInteracting: false,
         isMobile: window.innerWidth < 768,
         isVisible: true,
         isDragging: false,
         prevMouse: { x: 0, y: 0 },
-        baseRotX: -0.40,
-        baseRotY: 0.78,
-        rotX: -0.40,
-        rotY: 0.78,
-        targetRotX: -0.40,
-        targetRotY: 0.78,
+        baseRotX: -0.38,
+        baseRotY: 0.75,
+        rotX: -0.38,
+        rotY: 0.75,
+        targetRotX: -0.38,
+        targetRotY: 0.75,
         dragOffsetX: 0,
         dragOffsetY: 0
     };
 
-    const DAMPING = 0.07;
-    const ROTATION_SWAY_X = 0.04;
-    const ROTATION_SWAY_Y = 0.15;
-    const DRAG_RETURN = 0.93;
-    const DRAG_LIMIT_X = 0.28;
-    const DRAG_LIMIT_Y = 0.38;
-    const REVEAL_CYCLE_MS = 9500;
-    const REVEAL_PEAK = 0.16;
+    const DAMPING = 0.06;
+    const ROTATION_SWAY_X = 0.035;
+    const ROTATION_SWAY_Y = 0.12;
+    const DRAG_RETURN = 0.94;
+    const DRAG_LIMIT_X = 0.25;
+    const DRAG_LIMIT_Y = 0.35;
+    const REVEAL_CYCLE_MS = 10000;
+    const REVEAL_PEAK = 0.18;
 
-    /* ---- Box Dimensions (realistic proportions) ---- */
-    const BW = 1.8;   // body width (X)
-    const BH = 0.52;  // body height (Y)
-    const BD = 1.15;   // body depth (Z)
-    const WALL = 0.035; // wall thickness
-    const FLAP_H = BD * 0.45; // flap length (about half the depth)
+    // --- Realistic Scaling (in meters-equivalent) ---
+    const BOX_W = 1.82;
+    const BOX_H = 0.54;
+    const BOX_D = 1.18;
+    const THICKNESS = 0.038; // 3.8mm scale
+    const BEVEL_SIZE = 0.008; // Rounded edges
+    const FLAP_RATIO = 0.46; // Typical RSC flap length
 
-    let container, scene, camera, renderer;
-    let boxGroup, lidFlapGroup, insertPanel, insertMaterial;
+    let container, scene, camera, renderer, pmremGenerator;
+    let boxGroup, flapPivotGroup, insertPanel, insertMaterial;
     let animFrameId, animationStart = 0;
-    let kraftMat, darkKraftMat, insideMat, tapeMat;
+    let studioEnvMap;
+
+    // Materials
+    let outerMat, innerMat, edgeMat, tapeMat, shadowMat;
 
     /* =========================================================
-     *  PROCEDURAL TEXTURES
+     *  PROCEDURAL ASSETS (HDRI & TEXTURES)
      * ========================================================= */
 
-    function createKraftTexture(size) {
-        size = size || 512;
-        const c = document.createElement('canvas');
-        c.width = size; c.height = size;
-        const ctx = c.getContext('2d');
+    /** Generates a "Studio" environment map for PBR reflections */
+    function createStudioEnvironment() {
+        const size = 512;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
 
-        // Base kraft colour
-        ctx.fillStyle = '#c4a265';
+        // Dark studio floor/walls
+        ctx.fillStyle = '#111';
         ctx.fillRect(0, 0, size, size);
 
-        // Subtle broad colour variation (patches)
-        for (let i = 0; i < 18; i++) {
+        // Ceiling/Overhead Softbox
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(size * 0.2, 0, size * 0.6, size * 0.4);
+
+        // Side Key Light
+        const grad = ctx.createLinearGradient(0, 0, size * 0.3, 0);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size * 0.3, size);
+
+        // Top-Back Rim Light
+        ctx.fillStyle = '#444';
+        ctx.fillRect(0, size * 0.7, size, size * 0.3);
+
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.mapping = THREE.EquirectangularReflectionMapping;
+        return tex;
+    }
+
+    /** Creates hyper-detailed Kraft paper texture */
+    function createDetailedKraftTexture() {
+        const size = 1024;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        // Base Kraft tone
+        ctx.fillStyle = '#c9a66d';
+        ctx.fillRect(0, 0, size, size);
+
+        // Broad non-uniformity (stains/patches)
+        for (let i = 0; i < 30; i++) {
             const x = Math.random() * size;
             const y = Math.random() * size;
-            const r = 30 + Math.random() * 100;
+            const r = 50 + Math.random() * 200;
             const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-            const tone = Math.random() > 0.5 ? 'rgba(180,148,90,' : 'rgba(210,178,120,';
-            g.addColorStop(0, tone + (0.06 + Math.random() * 0.08) + ')');
+            const op = 0.05 + Math.random() * 0.1;
+            g.addColorStop(0, `rgba(${160 + Math.random() * 40},130,80,${op})`);
             g.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = g;
             ctx.fillRect(0, 0, size, size);
         }
 
-        // Fine fiber strands (horizontal-ish)
-        for (let i = 0; i < 16000; i++) {
+        // Paper fibers (high frequency)
+        ctx.globalAlpha = 0.15;
+        for (let i = 0; i < 40000; i++) {
             const x = Math.random() * size;
             const y = Math.random() * size;
-            const len = 3 + Math.random() * 9;
-            const angle = (Math.random() - 0.5) * 0.55;
-            const base = 135 + Math.floor(Math.random() * 48);
-            ctx.strokeStyle = `rgba(${base},${base - 20},${base - 50},${0.05 + Math.random() * 0.12})`;
-            ctx.lineWidth = 0.3 + Math.random() * 0.8;
+            const l = 1 + Math.random() * 6;
+            const a = (Math.random() - 0.5) * 0.4;
+            const color = 140 + Math.random() * 50;
+            ctx.strokeStyle = `rgb(${color},${color - 20},${color - 50})`;
+            ctx.lineWidth = 0.2 + Math.random() * 0.5;
             ctx.beginPath();
             ctx.moveTo(x, y);
-            ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
+            ctx.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l);
             ctx.stroke();
         }
+        ctx.globalAlpha = 1.0;
 
-        // Occasional darker specks (natural paper imperfections)
-        for (let i = 0; i < 600; i++) {
-            ctx.fillStyle = `rgba(${80 + Math.random() * 40},${60 + Math.random() * 30},${30 + Math.random() * 20},${0.08 + Math.random() * 0.15})`;
-            ctx.fillRect(Math.random() * size, Math.random() * size, 1 + Math.random() * 2.5, 1 + Math.random() * 2.5);
+        // Corrugated ridge normal simulation (baked into color for simpler shader)
+        // This adds subtle light/dark long stripes
+        const stripeCount = 42;
+        for (let i = 0; i < stripeCount; i++) {
+            const x = (i / stripeCount) * size;
+            ctx.fillStyle = i % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.015)';
+            ctx.fillRect(x, 0, size / stripeCount / 2, size);
         }
 
-        const tex = new THREE.CanvasTexture(c);
+        const tex = new THREE.CanvasTexture(canvas);
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        tex.repeat.set(2.5, 2.5);
+        tex.repeat.set(2, 2);
         return tex;
     }
 
-    function createBumpMap(size) {
-        size = size || 512;
-        const c = document.createElement('canvas');
-        c.width = size; c.height = size;
-        const ctx = c.getContext('2d');
+    /** Procedural Normal Map for Paper grain */
+    function createPaperNormalMap() {
+        const size = 512;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
 
-        // Neutral grey base
-        ctx.fillStyle = '#808080';
+        // Neutral normal color (128, 128, 255)
+        ctx.fillStyle = '#8080ff';
         ctx.fillRect(0, 0, size, size);
 
-        // Corrugation ridges (vertical sine waves)
-        const ridges = 32;
-        for (let i = 0; i < ridges; i++) {
-            const x = (i / ridges) * size;
-            const w = size / ridges;
-            // Alternating light/dark stripes for ridge effect
-            ctx.fillStyle = i % 2 === 0 ? '#999' : '#666';
-            ctx.fillRect(x, 0, w, size);
-        }
-
-        // Subtle random noise for paper grain
-        for (let i = 0; i < 8000; i++) {
-            const v = 100 + Math.floor(Math.random() * 56);
-            ctx.fillStyle = `rgb(${v},${v},${v})`;
+        // Random noise/bumps
+        for (let i = 0; i < 15000; i++) {
+            const r = 120 + Math.random() * 16;
+            const g = 120 + Math.random() * 16;
+            ctx.fillStyle = `rgb(${r},${g},255)`;
             ctx.fillRect(Math.random() * size, Math.random() * size, 1, 1);
         }
 
-        const tex = new THREE.CanvasTexture(c);
+        const tex = new THREE.CanvasTexture(canvas);
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        tex.repeat.set(4, 4);
         return tex;
     }
 
     /* =========================================================
-     *  SCENE SETUP
+     *  GEOMETRY BUILDERS
      * ========================================================= */
 
-    function setupScene() {
+    /** Creates a 3D box side with thickness and beveled edges */
+    function createBeveledPanel(w, h, depth) {
+        const shape = new THREE.Shape();
+        const r = BEVEL_SIZE;
+        // Rounded rectangle path
+        shape.moveTo(-w / 2 + r, -h / 2);
+        shape.lineTo(w / 2 - r, -h / 2);
+        shape.absarc(w / 2 - r, -h / 2 + r, r, -Math.PI / 2, 0, false);
+        shape.lineTo(w / 2, h / 2 - r);
+        shape.absarc(w / 2 - r, h / 2 - r, r, 0, Math.PI / 2, false);
+        shape.lineTo(-w / 2 + r, h / 2);
+        shape.absarc(-w / 2 + r, h / 2 - r, r, Math.PI / 2, Math.PI, false);
+        shape.lineTo(-w / 2, -h / 2 + r);
+        shape.absarc(-w / 2 + r, -h / 2 + r, r, Math.PI, Math.PI * 1.5, false);
+
+        const extrudeSettings = {
+            steps: 1,
+            depth: depth,
+            bevelEnabled: true,
+            bevelThickness: 0.004,
+            bevelSize: 0.004,
+            bevelOffset: 0,
+            bevelSegments: 2
+        };
+
+        const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+        geo.center();
+        return geo;
+    }
+
+    /* =========================================================
+     *  SCENE INITIALIZATION
+     * ========================================================= */
+
+    function init() {
+        container = document.getElementById('hero3dCanvas');
+        if (!container) return;
+
         scene = new THREE.Scene();
 
         camera = new THREE.PerspectiveCamera(
-            32,
+            30,
             container.clientWidth / container.clientHeight,
             0.1, 100
         );
-        camera.position.set(2.7, 1.8, 4.6);
-        camera.lookAt(0, 0.08, 0);
+        camera.position.set(2.8, 1.8, 5.0); // Slightly further back for better framing
+        camera.lookAt(0, 0, 0);
 
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.toneMappingExposure = 1.2;
         renderer.shadowMap.enabled = !S.isMobile;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.05;
         container.appendChild(renderer.domElement);
 
-        /* -- Lights (product-photography style) -- */
-        scene.add(new THREE.AmbientLight(0xfff8ef, 0.50));
+        // Lighting Rig
+        scene.add(new THREE.AmbientLight(0xfff5e6, 0.55));
 
-        const keyLight = new THREE.DirectionalLight(0xfff4dc, 1.0);
-        keyLight.position.set(-3.5, 5.2, 5.5);
-        keyLight.castShadow = !S.isMobile;
-        keyLight.shadow.mapSize.set(1024, 1024);
-        keyLight.shadow.camera.near = 0.5;
-        keyLight.shadow.camera.far = 14;
-        keyLight.shadow.camera.left = -3;
-        keyLight.shadow.camera.right = 3;
-        keyLight.shadow.camera.top = 3;
-        keyLight.shadow.camera.bottom = -3;
-        keyLight.shadow.bias = -0.001;
-        scene.add(keyLight);
+        const key = new THREE.DirectionalLight(0xffeedd, 1.1);
+        key.position.set(-4, 6, 6);
+        key.castShadow = !S.isMobile;
+        key.shadow.mapSize.set(1024, 1024);
+        key.shadow.camera.near = 0.5;
+        key.shadow.camera.far = 15;
+        key.shadow.bias = -0.0008;
+        scene.add(key);
 
-        const fill = new THREE.DirectionalLight(0xdce8ff, 0.40);
-        fill.position.set(3.8, 2, -2.8);
+        const fill = new THREE.DirectionalLight(0xddeeff, 0.45);
+        fill.position.set(4, 2, -3);
         scene.add(fill);
 
-        const rim = new THREE.DirectionalLight(0xfff0d0, 0.30);
-        rim.position.set(-1.5, 3.5, -4);
+        const rim = new THREE.DirectionalLight(0xffffff, 0.35);
+        rim.position.set(0, 4, -5);
         scene.add(rim);
 
-        const bottomBounce = new THREE.DirectionalLight(0xffe8c8, 0.15);
-        bottomBounce.position.set(0, -2, 2);
-        scene.add(bottomBounce);
+        // Env Map for PBR
+        studioEnvMap = createStudioEnvironment();
+        pmremGenerator = new THREE.PMREMGenerator(renderer);
+        pmremGenerator.compileEquirectangularShader();
+        const envTarget = pmremGenerator.fromEquirectangular(studioEnvMap);
+        scene.environment = envTarget.texture;
 
-        /* -- Ground shadow plane -- */
-        if (!S.isMobile) {
-            const ground = new THREE.Mesh(
-                new THREE.PlaneGeometry(10, 10),
-                new THREE.ShadowMaterial({ opacity: 0.13 })
-            );
-            ground.rotation.x = -Math.PI / 2;
-            ground.position.y = -1.2;
-            ground.position.z = 0.2;
-            ground.receiveShadow = true;
-            scene.add(ground);
-        }
-    }
+        buildBox();
+        setupInteraction();
+        startLoop();
 
-    /* =========================================================
-     *  MATERIALS
-     * ========================================================= */
-
-    function createMaterials() {
-        const kraftTex = createKraftTexture(512);
-        const bumpTex = createBumpMap(512);
-
-        kraftMat = new THREE.MeshStandardMaterial({
-            map: kraftTex,
-            bumpMap: bumpTex,
-            bumpScale: 0.025,
-            color: 0xc4a265,
-            roughness: 0.78,
-            metalness: 0.0
-        });
-
-        darkKraftMat = new THREE.MeshStandardMaterial({
-            map: kraftTex,
-            bumpMap: bumpTex,
-            bumpScale: 0.02,
-            color: 0xab8a4a,
-            roughness: 0.85,
-            metalness: 0.0
-        });
-
-        insideMat = new THREE.MeshStandardMaterial({
-            map: kraftTex,
-            bumpMap: bumpTex,
-            bumpScale: 0.015,
-            color: 0xbfa05d,
-            roughness: 0.92,
-            metalness: 0.0,
-            side: THREE.BackSide
-        });
-
-        tapeMat = new THREE.MeshStandardMaterial({
-            color: 0xd4c399,
-            roughness: 0.38,
-            metalness: 0.02,
-            transparent: true,
-            opacity: 0.72
-        });
-
-        insertMaterial = new THREE.MeshStandardMaterial({
-            color: 0xe3d6b6,
-            roughness: 0.9,
-            metalness: 0,
-            transparent: true,
-            opacity: prefersReducedMotion ? 0 : 0.02
-        });
+        window.addEventListener('resize', onResize);
+        onResize();
     }
 
     /* =========================================================
@@ -259,367 +272,230 @@
 
     function buildBox() {
         boxGroup = new THREE.Group();
-        createMaterials();
 
-        buildBody();
-        buildFlaps();
-        buildCorrugatedEdge();
-        buildFoldCreases();
-        buildTapeStrip();
-        addEdgeLines();
-        buildInsertPanel();
+        const kraftTex = createDetailedKraftTexture();
+        const normalTex = createPaperNormalMap();
 
-        boxGroup.rotation.x = S.baseRotX;
-        boxGroup.rotation.y = S.baseRotY;
-        boxGroup.position.set(0.18, -0.05, 0);
-        boxGroup.scale.set(1.1, 1.1, 1.1);
+        // High-Quality Physical Materials
+        outerMat = new THREE.MeshPhysicalMaterial({
+            map: kraftTex,
+            normalMap: normalTex,
+            normalScale: new THREE.Vector2(0.4, 0.4),
+            color: 0xc9a66d,
+            roughness: 0.88,
+            metalness: 0.0,
+            reflectivity: 0.1,
+            envMapIntensity: 0.45,
+            side: THREE.DoubleSide
+        });
 
-        scene.add(boxGroup);
-    }
+        innerMat = new THREE.MeshPhysicalMaterial({
+            map: kraftTex,
+            color: 0xba965a,
+            roughness: 0.95,
+            metalness: 0.0,
+            side: THREE.BackSide
+        });
 
-    /* --- Body (hollow open-top box) --- */
-    function buildBody() {
-        // Front wall
-        const frontG = new THREE.BoxGeometry(BW, BH, WALL);
-        const front = new THREE.Mesh(frontG, kraftMat);
-        front.position.set(0, 0, BD / 2);
-        front.castShadow = true; front.receiveShadow = true;
-        boxGroup.add(front);
+        edgeMat = new THREE.MeshStandardMaterial({
+            color: 0x9b7f4e,
+            roughness: 0.9
+        });
 
-        // Back wall
-        const back = new THREE.Mesh(frontG, kraftMat);
-        back.position.set(0, 0, -BD / 2);
-        back.castShadow = true; back.receiveShadow = true;
-        boxGroup.add(back);
+        tapeMat = new THREE.MeshPhysicalMaterial({
+            color: 0xd4c6a6,
+            roughness: 0.25,
+            metalness: 0.0,
+            transmission: 0.3,
+            thickness: 0.01,
+            transparent: true,
+            opacity: 0.7
+        });
 
-        // Left wall
-        const sideG = new THREE.BoxGeometry(WALL, BH, BD);
-        const left = new THREE.Mesh(sideG, kraftMat);
-        left.position.set(-BW / 2, 0, 0);
-        left.castShadow = true; left.receiveShadow = true;
-        boxGroup.add(left);
+        // 1. Body Construction (Hollow)
+        const frontWall = new THREE.Mesh(createBeveledPanel(BOX_W, BOX_H, THICKNESS), outerMat);
+        frontWall.position.set(0, 0, BOX_D / 2);
+        frontWall.castShadow = true; frontWall.receiveShadow = true;
+        boxGroup.add(frontWall);
 
-        // Right wall
-        const right = new THREE.Mesh(sideG, kraftMat);
-        right.position.set(BW / 2, 0, 0);
-        right.castShadow = true; right.receiveShadow = true;
-        boxGroup.add(right);
+        const backWall = new THREE.Mesh(createBeveledPanel(BOX_W, BOX_H, THICKNESS), outerMat);
+        backWall.position.set(0, 0, -BOX_D / 2);
+        backWall.castShadow = true; backWall.receiveShadow = true;
+        boxGroup.add(backWall);
 
-        // Bottom
-        const bottomG = new THREE.BoxGeometry(BW, WALL, BD);
-        const bottom = new THREE.Mesh(bottomG, kraftMat);
-        bottom.position.set(0, -BH / 2, 0);
+        const leftWall = new THREE.Mesh(createBeveledPanel(THICKNESS, BOX_H, BOX_D), outerMat);
+        leftWall.position.set(-BOX_W / 2, 0, 0);
+        leftWall.castShadow = true; leftWall.receiveShadow = true;
+        boxGroup.add(leftWall);
+
+        const rightWall = new THREE.Mesh(createBeveledPanel(THICKNESS, BOX_H, BOX_D), outerMat);
+        rightWall.position.set(BOX_W / 2, 0, 0);
+        rightWall.castShadow = true; rightWall.receiveShadow = true;
+        boxGroup.add(rightWall);
+
+        const bottom = new THREE.Mesh(createBeveledPanel(BOX_W, THICKNESS, BOX_D), outerMat);
+        bottom.position.set(0, -BOX_H / 2, 0);
         bottom.castShadow = true; bottom.receiveShadow = true;
         boxGroup.add(bottom);
 
-        // Inner faces (darker for depth)
-        const innerFront = new THREE.Mesh(new THREE.PlaneGeometry(BW - WALL * 2, BH - WALL), darkKraftMat);
-        innerFront.position.set(0, WALL / 2, BD / 2 - WALL - 0.001);
-        boxGroup.add(innerFront);
+        // 2. Flap Pivots
+        flapPivotGroup = new THREE.Group();
+        flapPivotGroup.position.y = BOX_H / 2;
+        boxGroup.add(flapPivotGroup);
 
-        const innerBack = new THREE.Mesh(new THREE.PlaneGeometry(BW - WALL * 2, BH - WALL), darkKraftMat);
-        innerBack.position.set(0, WALL / 2, -(BD / 2 - WALL - 0.001));
-        innerBack.rotation.y = Math.PI;
-        boxGroup.add(innerBack);
+        const flapW = BOX_W;
+        const flapD = BOX_D * FLAP_RATIO;
 
-        const innerLeft = new THREE.Mesh(new THREE.PlaneGeometry(BD - WALL * 2, BH - WALL), darkKraftMat);
-        innerLeft.position.set(-BW / 2 + WALL + 0.001, WALL / 2, 0);
-        innerLeft.rotation.y = Math.PI / 2;
-        boxGroup.add(innerLeft);
+        // Front Main Flap (animated)
+        const frontFlapPivot = new THREE.Group();
+        frontFlapPivot.position.set(0, 0, BOX_D / 2);
+        const frontFlapMesh = new THREE.Mesh(createBeveledPanel(flapW, THICKNESS, flapD), outerMat);
+        frontFlapMesh.position.set(0, 0, -flapD / 2);
+        frontFlapMesh.castShadow = true;
+        frontFlapPivot.add(frontFlapMesh);
+        frontFlapPivot.rotation.x = -Math.PI / 2;
+        flapPivotGroup.add(frontFlapPivot);
 
-        const innerRight = new THREE.Mesh(new THREE.PlaneGeometry(BD - WALL * 2, BH - WALL), darkKraftMat);
-        innerRight.position.set(BW / 2 - WALL - 0.001, WALL / 2, 0);
-        innerRight.rotation.y = -Math.PI / 2;
-        boxGroup.add(innerRight);
-    }
+        // Back Flap
+        const backFlapPivot = new THREE.Group();
+        backFlapPivot.position.set(0, 0, -BOX_D / 2);
+        const backFlapMesh = new THREE.Mesh(createBeveledPanel(flapW, THICKNESS, flapD), outerMat);
+        backFlapMesh.position.set(0, 0, flapD / 2);
+        backFlapMesh.castShadow = true;
+        backFlapPivot.add(backFlapMesh);
+        backFlapPivot.rotation.x = Math.PI / 2;
+        flapPivotGroup.add(backFlapPivot);
 
-    /* --- RSC Flaps (4 flaps with pivot hinges at top of walls) --- */
-    function buildFlaps() {
-        lidFlapGroup = new THREE.Group();
-        lidFlapGroup.position.y = BH / 2;
-        boxGroup.add(lidFlapGroup);
+        // Side Flaps (Side tucks)
+        const sideFlapW = BOX_D - THICKNESS * 2;
+        const sideFlapD = BOX_W * 0.45;
+        const leftFlapPivot = new THREE.Group();
+        leftFlapPivot.position.set(-BOX_W / 2, 0, 0);
+        const leftFlapMesh = new THREE.Mesh(createBeveledPanel(sideFlapD, THICKNESS, sideFlapW), outerMat);
+        leftFlapMesh.position.set(sideFlapD / 2, 0, 0);
+        leftFlapPivot.add(leftFlapMesh);
+        leftFlapPivot.rotation.z = Math.PI / 2;
+        flapPivotGroup.add(leftFlapPivot);
 
-        // Front flap (main closing flap — the one that animates)
-        const flapFrontPivot = new THREE.Group();
-        flapFrontPivot.position.set(0, 0, BD / 2);
-        const flapFrontMesh = new THREE.Mesh(
-            new THREE.BoxGeometry(BW, WALL, FLAP_H),
-            kraftMat
-        );
-        flapFrontMesh.position.set(0, WALL / 2, -FLAP_H / 2);
-        flapFrontMesh.castShadow = true;
-        flapFrontPivot.add(flapFrontMesh);
+        const rightFlapPivot = new THREE.Group();
+        rightFlapPivot.position.set(BOX_W / 2, 0, 0);
+        const rightFlapMesh = new THREE.Mesh(createBeveledPanel(sideFlapD, THICKNESS, sideFlapW), outerMat);
+        rightFlapMesh.position.set(-sideFlapD / 2, 0, 0);
+        rightFlapPivot.add(rightFlapMesh);
+        rightFlapPivot.rotation.z = -Math.PI / 2;
+        flapPivotGroup.add(rightFlapPivot);
 
-        // Inner face of front flap
-        const flapFrontInner = new THREE.Mesh(
-            new THREE.PlaneGeometry(BW - 0.02, FLAP_H - 0.02),
-            darkKraftMat
-        );
-        flapFrontInner.position.set(0, 0, -FLAP_H / 2);
-        flapFrontInner.rotation.x = Math.PI / 2;
-        flapFrontPivot.add(flapFrontInner);
+        // 3. Corrugated Edge Detail
+        addCorrugatedEdges();
 
-        // Close the front flap (folded flat — will animate open)
-        flapFrontPivot.rotation.x = -Math.PI / 2;
-        flapFrontPivot.userData = { type: 'frontFlap' };
-        lidFlapGroup.add(flapFrontPivot);
+        // 4. Tape Detail
+        const tape = new THREE.Mesh(new THREE.PlaneGeometry(BOX_W * 0.7, 0.082), tapeMat);
+        tape.rotation.x = -Math.PI / 2;
+        tape.position.set(0, BOX_H / 2 + THICKNESS / 2 + 0.002, 0);
+        boxGroup.add(tape);
 
-        // Back flap (closed flat)
-        const flapBackPivot = new THREE.Group();
-        flapBackPivot.position.set(0, 0, -BD / 2);
-        const flapBackMesh = new THREE.Mesh(
-            new THREE.BoxGeometry(BW, WALL, FLAP_H),
-            kraftMat
-        );
-        flapBackMesh.position.set(0, WALL / 2, FLAP_H / 2);
-        flapBackMesh.castShadow = true;
-        flapBackPivot.add(flapBackMesh);
-        flapBackPivot.rotation.x = Math.PI / 2;
-        lidFlapGroup.add(flapBackPivot);
+        const tapeFold = new THREE.Mesh(new THREE.PlaneGeometry(BOX_W * 0.7, 0.06), tapeMat);
+        tapeFold.position.set(0, BOX_H / 2 - 0.03, BOX_D / 2 + THICKNESS / 2 + 0.002);
+        boxGroup.add(tapeFold);
 
-        // Left side flap (shorter tuck flap)
-        const tuckFlapW = BD * 0.44;
-        const flapLeftPivot = new THREE.Group();
-        flapLeftPivot.position.set(-BW / 2, 0, 0);
-        const flapLeftMesh = new THREE.Mesh(
-            new THREE.BoxGeometry(tuckFlapW, WALL, BD - WALL * 2),
-            kraftMat
-        );
-        flapLeftMesh.position.set(tuckFlapW / 2, WALL / 2, 0);
-        flapLeftMesh.castShadow = true;
-        flapLeftPivot.add(flapLeftMesh);
-        flapLeftPivot.rotation.z = Math.PI / 2;
-        lidFlapGroup.add(flapLeftPivot);
+        // 5. Build Insert Panel (shown during reveal)
+        buildInsert();
 
-        // Right side flap (shorter tuck flap)
-        const flapRightPivot = new THREE.Group();
-        flapRightPivot.position.set(BW / 2, 0, 0);
-        const flapRightMesh = new THREE.Mesh(
-            new THREE.BoxGeometry(tuckFlapW, WALL, BD - WALL * 2),
-            kraftMat
-        );
-        flapRightMesh.position.set(-tuckFlapW / 2, WALL / 2, 0);
-        flapRightMesh.castShadow = true;
-        flapRightPivot.add(flapRightMesh);
-        flapRightPivot.rotation.z = -Math.PI / 2;
-        lidFlapGroup.add(flapRightPivot);
-    }
-
-    /* --- Corrugated edge visible on the top of walls --- */
-    function buildCorrugatedEdge() {
-        // Show corrugation pattern on the cut top edge (front wall)
-        const segments = 36;
-        const edgeW = BW - 0.04;
-        const amplitude = 0.008;
-        const verts = [];
-        const indices = [];
-
-        for (let row = 0; row < 2; row++) {
-            const z = BD / 2 - WALL + row * WALL;
-            for (let i = 0; i <= segments; i++) {
-                const t = i / segments;
-                const x = -edgeW / 2 + t * edgeW;
-                const y = BH / 2 + Math.sin(t * Math.PI * 18) * amplitude;
-                verts.push(x, y, z);
-            }
+        // 6. Ground Shadow Catcher
+        if (!S.isMobile) {
+            const ground = new THREE.Mesh(
+                new THREE.PlaneGeometry(10, 10),
+                new THREE.ShadowMaterial({ opacity: 0.16 })
+            );
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -1.25;
+            ground.receiveShadow = true;
+            scene.add(ground);
         }
 
-        for (let i = 0; i < segments; i++) {
-            const a = i, b = i + 1;
-            const c = segments + 1 + i, d = c + 1;
-            indices.push(a, b, c, b, d, c);
-        }
-
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-        geo.setIndex(indices);
-        geo.computeVertexNormals();
-
-        const corrEdge = new THREE.Mesh(geo, darkKraftMat);
-        corrEdge.castShadow = true;
-        boxGroup.add(corrEdge);
-
-        // Same for back wall
-        const corrEdgeBack = corrEdge.clone();
-        corrEdgeBack.position.z = -(BD - WALL);
-        boxGroup.add(corrEdgeBack);
+        boxGroup.rotation.x = S.baseRotX;
+        boxGroup.rotation.y = S.baseRotY;
+        boxGroup.position.set(0.12, -0.02, 0); // Re-centered
+        boxGroup.scale.set(1.08, 1.08, 1.08); // Slightly smaller to avoid overlap
+        scene.add(boxGroup);
     }
 
-    /* --- Fold creases on the body --- */
-    function buildFoldCreases() {
-        const creaseMat = new THREE.MeshStandardMaterial({
-            color: 0x9d8450,
+    /** Adds the wavy corrugation pattern to the cut edges */
+    function addCorrugatedEdges() {
+        const segments = 60; // Higher fidelity
+        const amplitude = 0.009; // More visible waves
+        const freq = 22; // More ridges
+        const pts = [];
+
+        // Simple wavy line mesh (instanced in 4 corners would be better, but let's just do top edge)
+        for (let i = 0; i <= segments; i++) {
+            const x = (i / segments - 0.5) * (BOX_W - 0.05);
+            const y = Math.sin(i / segments * Math.PI * 2 * freq) * amplitude;
+            pts.push(new THREE.Vector3(x, y, 0));
+        }
+
+        const curve = new THREE.CatmullRomCurve3(pts);
+        const geo = new THREE.TubeGeometry(curve, segments, 0.004, 6, false);
+        const edge = new THREE.Mesh(geo, edgeMat);
+        edge.position.set(0, BOX_H / 2 - 0.002, BOX_D / 2 - 0.005);
+        boxGroup.add(edge);
+
+        const edgeBack = edge.clone();
+        edgeBack.position.z = -BOX_D / 2 + 0.005;
+        boxGroup.add(edgeBack);
+    }
+
+    function buildInsert() {
+        insertMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xeedcbd,
             roughness: 0.95,
             metalness: 0,
             transparent: true,
-            opacity: 0.18
+            opacity: 0.03
         });
 
-        // Horizontal crease line near top of body
-        const creaseH = new THREE.Mesh(
-            new THREE.PlaneGeometry(BW + 0.01, 0.006),
-            creaseMat
-        );
-        creaseH.position.set(0, BH / 2 - 0.005, BD / 2 + 0.002);
-        boxGroup.add(creaseH);
-
-        const creaseH2 = creaseH.clone();
-        creaseH2.position.z = -(BD / 2 + 0.002);
-        boxGroup.add(creaseH2);
-
-        // Vertical fold creases at body corners (subtle)
-        const creaseV = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.005, BH),
-            creaseMat
-        );
-        // Front-left corner
-        const cfl = creaseV.clone();
-        cfl.position.set(-BW / 2, 0, BD / 2 + 0.002);
-        boxGroup.add(cfl);
-        // Front-right corner
-        const cfr = creaseV.clone();
-        cfr.position.set(BW / 2, 0, BD / 2 + 0.002);
-        boxGroup.add(cfr);
-    }
-
-    /* --- Tape strip across the top seam --- */
-    function buildTapeStrip() {
-        const tapeWidth = 0.08;
-        const tape = new THREE.Mesh(
-            new THREE.BoxGeometry(BW * 0.75, 0.003, tapeWidth),
-            tapeMat
-        );
-        // Position on top of front flap (which is folded shut at top)
-        tape.position.set(0, BH / 2 + WALL + 0.003, 0);
-        tape.castShadow = true;
-        boxGroup.add(tape);
-
-        // Front overhanging tape
-        const tapeFront = new THREE.Mesh(
-            new THREE.BoxGeometry(BW * 0.75, 0.07, 0.003),
-            tapeMat
-        );
-        tapeFront.position.set(0, BH / 2 + WALL - 0.032, BD / 2 + 0.002);
-        boxGroup.add(tapeFront);
-    }
-
-    /* --- Edge highlight lines --- */
-    function addEdgeLines() {
-        const edgeMat = new THREE.LineBasicMaterial({
-            color: 0x8b6f3a,
-            transparent: true,
-            opacity: 0.30
-        });
-
-        // Body outline
-        const bodyEdges = new THREE.LineSegments(
-            new THREE.EdgesGeometry(new THREE.BoxGeometry(BW, BH, BD)),
-            edgeMat
-        );
-        boxGroup.add(bodyEdges);
-    }
-
-    /* --- Inner corrugated insert panel (for reveal animation) --- */
-    function buildInsertPanel() {
-        insertPanel = new THREE.Mesh(
-            createCorrugationGeometry(BW * 0.82, 0.14, BD * 0.7),
-            insertMaterial
-        );
-        insertPanel.position.set(0, 0.05, 0);
-        insertPanel.rotation.x = 0.02;
-        insertPanel.castShadow = true;
+        const geo = new THREE.BoxGeometry(BOX_W * 0.82, 0.12, BOX_D * 0.7);
+        insertPanel = new THREE.Mesh(geo, insertMaterial);
+        insertPanel.position.set(0, 0.04, 0);
         boxGroup.add(insertPanel);
     }
 
-    function createCorrugationGeometry(width, height, depth) {
-        const segments = 32;
-        const rows = 5;
-        const amplitude = height * 0.38;
-        const frequency = 9;
-        const verts = [];
-        const indices = [];
-        const halfW = width / 2;
-        const halfD = depth / 2;
-
-        for (let row = 0; row <= rows; row++) {
-            const z = -halfD + (row / rows) * depth;
-            for (let i = 0; i <= segments; i++) {
-                const x = -halfW + (i / segments) * width;
-                const y = Math.sin((i / segments) * Math.PI * 2 * frequency) * amplitude;
-                verts.push(x, y, z);
-            }
-        }
-
-        for (let row = 0; row < rows; row++) {
-            for (let i = 0; i < segments; i++) {
-                const a = row * (segments + 1) + i;
-                const b = a + 1;
-                const c = a + segments + 1;
-                const d = c + 1;
-                indices.push(a, b, c, b, d, c);
-            }
-        }
-
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-        geo.setIndex(indices);
-        geo.computeVertexNormals();
-        return geo;
-    }
-
     /* =========================================================
-     *  REVEAL ANIMATION (flap peek)
+     *  ANIMATION & INTERACTION
      * ========================================================= */
 
     function getRevealAmount(now) {
         if (prefersReducedMotion || S.isMobile || S.isUserInteracting || !S.isVisible) return 0;
-
         const elapsed = Math.max(0, now - animationStart);
         const cycle = (elapsed % REVEAL_CYCLE_MS) / REVEAL_CYCLE_MS;
-        if (cycle < 0.34 || cycle > 0.7) return 0;
-
-        const normalized = (cycle - 0.34) / 0.36;
-        return Math.sin(normalized * Math.PI) * REVEAL_PEAK;
+        if (cycle < 0.35 || cycle > 0.75) return 0;
+        const n = (cycle - 0.35) / 0.40;
+        return Math.sin(n * Math.PI) * REVEAL_PEAK;
     }
 
     function updateReveal(now) {
-        if (!lidFlapGroup || !insertPanel || !insertMaterial) return;
-
+        if (!flapPivotGroup) return;
         const reveal = getRevealAmount(now);
 
-        // Animate front flap opening
-        const frontFlap = lidFlapGroup.children[0]; // front flap pivot
-        if (frontFlap) {
-            // Base closed = -PI/2, open slightly
-            frontFlap.rotation.x = -Math.PI / 2 + reveal * 3.2;
+        const frontFlapArr = flapPivotGroup.children[0];
+        if (frontFlapArr) {
+            frontFlapArr.rotation.x = -Math.PI / 2 + reveal * 3.4;
         }
 
-        // Slight lift on the whole flap group
-        lidFlapGroup.position.y = BH / 2 + reveal * 0.08;
-
-        // Show insert panel on reveal
-        insertPanel.position.y = 0.05 + reveal * 0.35;
-        insertPanel.rotation.x = 0.02 + reveal * 0.12;
-        insertMaterial.opacity = prefersReducedMotion ? 0 : 0.02 + reveal * 2.2;
-    }
-
-    /* =========================================================
-     *  RENDER LOOP
-     * ========================================================= */
-
-    function renderOnce() {
-        renderer.render(scene, camera);
+        if (insertPanel) {
+            insertPanel.position.y = 0.04 + reveal * 0.45;
+            insertMaterial.opacity = 0.03 + reveal * 2.5;
+        }
     }
 
     function startLoop() {
         animationStart = performance.now();
-
-        function frame(now) {
+        const frame = (now) => {
             animFrameId = requestAnimationFrame(frame);
             if (!S.isVisible) return;
 
-            const swayY = Math.sin(now * 0.00042) * ROTATION_SWAY_Y;
-            const swayX = Math.sin(now * 0.00021) * ROTATION_SWAY_X;
+            const swayY = Math.sin(now * 0.00038) * ROTATION_SWAY_Y;
+            const swayX = Math.sin(now * 0.00018) * ROTATION_SWAY_X;
 
             if (!S.isDragging) {
                 S.dragOffsetX *= DRAG_RETURN;
@@ -638,63 +514,40 @@
 
             updateReveal(now);
             renderer.render(scene, camera);
-        }
-
+        };
         animFrameId = requestAnimationFrame(frame);
     }
 
-    /* =========================================================
-     *  INTERACTION
-     * ========================================================= */
-
     function setupInteraction() {
-        container.addEventListener('mouseenter', function () {
-            S.isUserInteracting = true;
-        });
-
-        container.addEventListener('mouseleave', function () {
-            S.isUserInteracting = false;
-            S.isDragging = false;
-        });
-
-        container.addEventListener('pointerdown', function (e) {
+        container.addEventListener('pointerdown', (e) => {
             S.isDragging = true;
             S.isUserInteracting = true;
             S.prevMouse.x = e.clientX;
             S.prevMouse.y = e.clientY;
         });
 
-        window.addEventListener('pointermove', function (e) {
+        window.addEventListener('pointermove', (e) => {
             if (!S.isDragging) return;
             const dx = e.clientX - S.prevMouse.x;
             const dy = e.clientY - S.prevMouse.y;
-            S.dragOffsetY = THREE.MathUtils.clamp(S.dragOffsetY + dx * 0.0035, -DRAG_LIMIT_Y, DRAG_LIMIT_Y);
-            S.dragOffsetX = THREE.MathUtils.clamp(S.dragOffsetX + dy * 0.0025, -DRAG_LIMIT_X, DRAG_LIMIT_X);
+            S.dragOffsetY = THREE.MathUtils.clamp(S.dragOffsetY + dx * 0.003, -DRAG_LIMIT_Y, DRAG_LIMIT_Y);
+            S.dragOffsetX = THREE.MathUtils.clamp(S.dragOffsetX + dy * 0.002, -DRAG_LIMIT_X, DRAG_LIMIT_X);
             S.prevMouse.x = e.clientX;
             S.prevMouse.y = e.clientY;
         });
 
-        window.addEventListener('pointerup', function () {
+        window.addEventListener('pointerup', () => {
             S.isDragging = false;
             S.isUserInteracting = false;
         });
 
-        container.addEventListener('touchstart', function () {
-            S.isUserInteracting = true;
-        }, { passive: true });
-
-        container.addEventListener('touchend', function () {
-            S.isUserInteracting = false;
-        }, { passive: true });
+        // Toggle user interaction flag for animation pausing
+        container.addEventListener('mouseenter', () => S.isUserInteracting = true);
+        container.addEventListener('mouseleave', () => S.isUserInteracting = false);
     }
-
-    /* =========================================================
-     *  RESIZE / VISIBILITY
-     * ========================================================= */
 
     function onResize() {
         if (!container || !camera || !renderer) return;
-
         S.isMobile = window.innerWidth < 768;
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
@@ -702,68 +555,26 @@
 
         if (boxGroup) {
             if (S.isMobile) {
-                boxGroup.position.set(0.06, -0.04, 0);
                 boxGroup.scale.set(0.92, 0.92, 0.92);
+                boxGroup.position.set(0.05, -0.05, 0);
             } else {
-                boxGroup.position.set(0.18, -0.05, 0);
-                boxGroup.scale.set(1.1, 1.1, 1.1);
+                boxGroup.scale.set(1.08, 1.08, 1.08);
+                boxGroup.position.set(0.12, -0.02, 0);
             }
         }
-
-        renderOnce();
     }
 
-    function setupResizeObserver() {
-        if (typeof ResizeObserver === 'undefined') {
-            window.addEventListener('resize', onResize);
-            return;
-        }
-        new ResizeObserver(onResize).observe(container);
-    }
-
-    function setupVisibilityAPI() {
-        document.addEventListener('visibilitychange', function () {
-            S.isVisible = !document.hidden;
-        });
-    }
-
-    /* =========================================================
-     *  BOOT
-     * ========================================================= */
-
-    function init() {
-        container = document.getElementById('hero3dCanvas');
-        if (!container || typeof THREE === 'undefined') return;
-
-        setupScene();
-        buildBox();
-        renderOnce();
-
-        if (!prefersReducedMotion) {
-            startLoop();
-            setupInteraction();
-        }
-
-        setupResizeObserver();
-        setupVisibilityAPI();
-    }
-
-    function boot() {
+    // Initialize
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
         init();
-        onResize();
     }
 
-    window.addEventListener('beforeunload', function () {
+    // Cleanup
+    window.addEventListener('beforeunload', () => {
         if (animFrameId) cancelAnimationFrame(animFrameId);
-        if (renderer) {
-            renderer.dispose();
-            renderer.forceContextLoss();
-        }
+        if (renderer) renderer.dispose();
     });
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', boot);
-    } else {
-        boot();
-    }
 })();
