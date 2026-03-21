@@ -1,5 +1,6 @@
 {
     "java.jdt.ls.vmargs": "-Dexample.disable=true",
     "java.project.importOnFirstTimeStartup": "never",
-    "java.autobuild.enabled": false
+    "java.autobuild.enabled": false,
+    "workbench.colorTheme": "Default Dark Modern"
 }
