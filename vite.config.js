@@ -2,7 +2,7 @@ import { cpSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
-const staticEntries = ['css', 'js', 'images', 'robots.txt', 'sitemap.xml'];
+const staticEntries = ['css', 'js', 'images', 'robots.txt', 'sitemap.xml', 'google0be6772dace22c75.html'];
 
 function copyStaticSiteAssets() {
   return {
