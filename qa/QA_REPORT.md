@@ -76,36 +76,38 @@ No known P0/P1/P2/P3 production defects remain after post-fix regression testing
 **Test Date:** 2026-09-03
 **Production URL:** [https://arti-enterprises-delta.vercel.app](https://arti-enterprises-delta.vercel.app)
 
-## Post-QA WhatsApp Number Regression
-- Previous WhatsApp number: +91 9420996107
-- Current WhatsApp number: +91 8856828107
-- WhatsApp links verified: ✅ PASS
-- Central configuration verified: ✅ PASS
-- Production WhatsApp CTA verified: ✅ PASS
-- Mobile floating WhatsApp CTA verified: ✅ PASS
-- Old WhatsApp references: 0
-- Final regression: ✅ PASS
+## Post-QA WhatsApp Number History
+- Original WhatsApp number: +91 9420996107
+- Interim WhatsApp number: +91 8856828107 (verified 2026-09-03)
+- **Final WhatsApp number: +91 7066959787** (verified 2026-09-03)
 
 ---
 
-## Final Production WhatsApp + Tidio Verification
-**Date:** 2026-09-03 | **Deployment commit:** aa48630 | **Production:** https://arti-enterprises-delta.vercel.app
+## Final WhatsApp Verification (7066959787)
+**Date:** 2026-09-03 | **Deployment commit:** 7eac708 | **Production:** https://arti-enterprises-delta.vercel.app
 
-### Number Classification (git grep)
-| Number | Occurrences | Type | Status |
-|---|---|---|---|
-| 9420996107 | contact.html, main.js, site-config.js, hero3d.js | PHONE (tel: only) | ✅ Correct |
-| 9420996107 as WhatsApp | 0 | — | ✅ PASS |
-| 8856828107 | All WA links, buttons, footer, configurator | WHATSAPP | ✅ Correct |
+### Live Production DOM Inspection (Puppeteer)
 
-### WhatsApp Display & Links
-| Check | Result |
-|---|---|
-| Footer WhatsApp display text | ✅ `+91 8856828107 (WhatsApp)` |
-| JS hydration (main.js) uses whatsappDisplay | ✅ Fixed — no longer uses phoneDisplay |
-| All `wa.me` hrefs | ✅ All → `https://wa.me/918856828107` |
-| Old `wa.me/919420996107` count | ✅ 0 |
-| Phone `tel:+919420996107` preserved | ✅ Correct — intentional |
+| Page | Footer WA Text | wa.me Links | All Use 917066959787 | Old 8856828107 in DOM |
+|---|---|---|---|---|
+| Homepage | `+91 7066959787 (WhatsApp)` | 12 | ✅ Yes | ✅ false |
+| Contact | `+91 7066959787 (WhatsApp)` | 9 | ✅ Yes | ✅ false |
+| Products | `+91 7066959787 (WhatsApp)` | 13 | ✅ Yes | ✅ false |
+
+### Floating WhatsApp Button
+- **href:** `https://wa.me/917066959787?text=...` ✅
+- **Position:** Bottom-left (no Tidio overlap) ✅
+
+### Phone Number Preserved
+- **Contact page `tel:` link:** `tel:+919420996107` → `+91 9420996107` ✅
+- Phone number intentionally unchanged.
+
+### Source Code Verification (git grep)
+| Pattern | HTML/JS/CSS matches | Status |
+|---|---|---|
+| `8856828107` | **0** | ✅ Completely removed |
+| `7066959787` | 14 source files | ✅ All WhatsApp references |
+| `9420996107` (phone) | `tel:` and `phoneDisplay` only | ✅ Correct — phone only |
 
 ### Tidio + WhatsApp Position (No Overlap)
 | Viewport | WhatsApp | Tidio | Overlap |
@@ -126,11 +128,13 @@ No known P0/P1/P2/P3 production defects remain after post-fix regression testing
 | Network failures | ✅ 0 |
 | Horizontal overflow | ✅ 0 |
 
-**Deployment:** ✅ PASS  
-**WhatsApp display number:** `+91 8856828107`  
-**WhatsApp destination:** `https://wa.me/918856828107`  
-**Old WhatsApp destination:** 0  
-**Phone destination:** `+91 9420996107` (preserved — call only)  
-**Tidio/WhatsApp overlap:** ✅ PASS  
-**Live DOM verification:** ✅ PASS  
-**Final regression:** ✅ PASS
+**Required WhatsApp:** `+91 7066959787`  
+**Live display:** `+91 7066959787 (WhatsApp)` ✅  
+**Live destination:** `https://wa.me/917066959787` ✅  
+**Old WhatsApp 8856828107:** 0 ✅  
+**Old WhatsApp 9420996107:** 0 (phone only) ✅  
+**Phone number:** `+91 9420996107` (preserved) ✅  
+**Tidio overlap:** PASS ✅  
+**Mobile:** PASS ✅  
+**Production verification:** PASS ✅
+
