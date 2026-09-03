@@ -50,7 +50,7 @@
     const { 
         getSiteConfig = () => window.ARTI_SITE || {},
         buildLeadMessage = () => 'Quotation Request',
-        buildWhatsAppUrl = (msg) => `https://wa.me/918856828107?text=${encodeURIComponent(msg)}`
+        buildWhatsAppUrl = (msg) => `https://wa.me/917066959787?text=${encodeURIComponent(msg)}`
     } = window.ARTI_SITE_UTILS || {};
     const hasThreeSupport = typeof window.THREE !== 'undefined';
 

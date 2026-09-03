@@ -9,9 +9,9 @@ window.ARTI_SITE = {
   catalogPriceLabel: 'Price on request',
   phoneDisplay: '+91 9420996107',
   phoneHref: 'tel:+919420996107',
-  whatsappNumber: '918856828107',
-  whatsappDisplay: '+91 8856828107',
-  whatsappBase: 'https://wa.me/918856828107',
+  whatsappNumber: '917066959787',
+  whatsappDisplay: '+91 7066959787',
+  whatsappBase: 'https://wa.me/917066959787',
   whatsappGreeting: 'Hello ARTI ENTERPRISES',
   email: 'artienterprises17@rediffmail.com',
   contactReplyPromise: 'Reply within 24 hours'

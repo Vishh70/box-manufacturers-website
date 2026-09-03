@@ -21,9 +21,9 @@ function getSiteConfig() {
     catalogPriceLabel: site.catalogPriceLabel || 'Price on request',
     phoneDisplay: site.phoneDisplay || '+91 9420996107',
     phoneHref: site.phoneHref || 'tel:+919420996107',
-    whatsappNumber: site.whatsappNumber || '918856828107',
-    whatsappDisplay: site.whatsappDisplay || '+91 8856828107',
-    whatsappBase: site.whatsappBase || 'https://wa.me/918856828107',
+    whatsappNumber: site.whatsappNumber || '917066959787',
+    whatsappDisplay: site.whatsappDisplay || '+91 7066959787',
+    whatsappBase: site.whatsappBase || 'https://wa.me/917066959787',
     whatsappGreeting: site.whatsappGreeting || 'Hello ARTI ENTERPRISES',
     email: site.email || 'artienterprises17@rediffmail.com',
     contactReplyPromise: site.contactReplyPromise || 'Reply within 24 hours'
