@@ -10,3 +10,5 @@ yarn-error.log*
 .env*.local
 .vscode/
 .wrangler/
+
+.vercel
