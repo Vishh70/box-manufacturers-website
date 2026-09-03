@@ -75,3 +75,13 @@ This QA report documents a full visual, functional, and layout inspection of the
 No known P0/P1/P2/P3 production defects remain after post-fix regression testing.
 **Test Date:** 2026-09-03
 **Production URL:** [https://arti-enterprises-delta.vercel.app](https://arti-enterprises-delta.vercel.app)
+
+## Post-QA WhatsApp Number Regression
+- Previous WhatsApp number: +91 9420996107 
+- Current WhatsApp number: +91 8856828107 
+- WhatsApp links verified: ✅ PASS
+- Central configuration verified: ✅ PASS
+- Production WhatsApp CTA verified: ✅ PASS
+- Mobile floating WhatsApp CTA verified: ✅ PASS
+- Old WhatsApp references: 0
+- Final regression: ✅ PASS
