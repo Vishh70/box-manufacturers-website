@@ -33,7 +33,7 @@
   }
 
   function buildSchema(article, site) {
-    const siteUrl = (site.website || 'https://arti-enterprises.vercel.app').replace(/\/$/, '');
+    const siteUrl = (site.website || 'https://arti-enterprises-delta.vercel.app').replace(/\/$/, '');
     const pageUrl = `${siteUrl}/blog-article.html?slug=${encodeURIComponent(article.slug)}`;
     const imageUrl = `${siteUrl}/${article.image.replace(/^\//, '')}`;
 
@@ -100,7 +100,7 @@
       ? window.ARTI_SITE_UTILS.getSiteConfig()
       : (window.ARTI_SITE || {});
 
-    const siteUrl = (site.website || 'https://arti-enterprises.vercel.app').replace(/\/$/, '');
+    const siteUrl = (site.website || 'https://arti-enterprises-delta.vercel.app').replace(/\/$/, '');
     const pageUrl = `${siteUrl}/blog-article.html?slug=${encodeURIComponent(article.slug)}`;
     const imageUrl = `${siteUrl}/${article.image.replace(/^\//, '')}`;
 
