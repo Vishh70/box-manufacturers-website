@@ -1409,7 +1409,8 @@ button {
   pointer-events: none;
 }
 
-.page-header h1 {
+.page-header h1,
+.page-header .page-header-title {
   font-family: var(--ff-heading);
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 800;
@@ -2222,7 +2223,8 @@ button {
     display: none;
   }
 
-  .page-header h1 {
+  .page-header h1,
+  .page-header .page-header-title {
     font-size: var(--fs-3xl);
   }
 

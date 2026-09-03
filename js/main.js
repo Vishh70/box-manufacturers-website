@@ -116,6 +116,7 @@ function bootstrapMainScripts() {
   initContactWhatsApp();
   initPriceTiers();
   initActiveNav();
+  initCurrentYear();
 }
 
 if (document.readyState === 'loading') {
@@ -356,3 +357,11 @@ function initActiveNav() {
     }
   });
 }
+
+function initCurrentYear() {
+  const currentYear = new Date().getFullYear();
+  document.querySelectorAll('.current-year').forEach((el) => {
+    el.textContent = currentYear;
+  });
+}
+

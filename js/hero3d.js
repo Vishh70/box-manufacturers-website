@@ -164,15 +164,19 @@
         ctx.font = `800 ${130*scale}px "Inter", "Arial Black", sans-serif`;
         ctx.fillText('ENTERPRISES', -40*scale, 75*scale);
 
+        const site = (typeof window !== 'undefined' && window.ARTI_SITE) ? window.ARTI_SITE : {};
+        const phone = site.phoneDisplay || '+91 9420996107';
+        const email = site.email || 'artienterprises17@rediffmail.com';
+
         ctx.textAlign = 'center';
         ctx.font = `900 ${48*scale}px "Inter", Arial, sans-serif`;
-        ctx.fillText('QUALITY PRODUCTS | RELIABLE SERVICE | EST. 2005', 0, 190*scale);
+        ctx.fillText('QUALITY PACKAGING | BULK MANUFACTURER | PUNE', 0, 190*scale);
          
         ctx.font = `600 ${36*scale}px "Inter", Arial, sans-serif`;
-        ctx.fillText('Head Office: 123 Industrial Area, Sector 4, City, State - Zip Code', 0, 340*scale);
-        ctx.fillText('Email: info@artienterprises.com | Web: www.artienterprises.com', 0, 395*scale);
+        ctx.fillText('Works: GAT NO 1297, Chikhali, Pune - 411062', 0, 340*scale);
+        ctx.fillText(`Email: ${email} | Web: arti-enterprises.vercel.app`, 0, 395*scale);
         ctx.font = `bold ${44*scale}px "Inter", Arial, sans-serif`;
-        ctx.fillText('Contact: +91 98765 43210', 0, 465*scale);
+        ctx.fillText(`WhatsApp: ${phone}`, 0, 465*scale);
         ctx.restore();
     }
 

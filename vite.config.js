@@ -1,7 +1,6 @@
 import { cpSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 
 const staticEntries = ['css', 'js', 'images', 'robots.txt', 'sitemap.xml'];
 
@@ -24,7 +23,7 @@ function copyStaticSiteAssets() {
 }
 
 export default defineConfig({
-  plugins: [react(), copyStaticSiteAssets()],
+  plugins: [copyStaticSiteAssets()],
   build: {
     rollupOptions: {
       input: {
