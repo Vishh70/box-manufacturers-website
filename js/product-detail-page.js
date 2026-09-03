@@ -16,7 +16,7 @@
   /* Use shared utilities from main.js (with safe fallbacks) */
   const {
     getSiteConfig = () => window.ARTI_SITE || { businessName: 'ARTI ENTERPRISES', website: 'https://arti-enterprises-delta.vercel.app', catalogPriceLabel: 'Price on request' },
-    buildWhatsAppUrl = (msg) => `https://wa.me/919420996107?text=${encodeURIComponent(msg)}`,
+    buildWhatsAppUrl = (msg) => `https://wa.me/918856828107?text=${encodeURIComponent(msg)}`,
     buildLeadMessage = (payload) => payload.closing || payload.requestType || 'Please share quotation.'
   } = window.ARTI_SITE_UTILS || {};
 
