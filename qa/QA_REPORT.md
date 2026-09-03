@@ -77,11 +77,60 @@ No known P0/P1/P2/P3 production defects remain after post-fix regression testing
 **Production URL:** [https://arti-enterprises-delta.vercel.app](https://arti-enterprises-delta.vercel.app)
 
 ## Post-QA WhatsApp Number Regression
-- Previous WhatsApp number: +91 9420996107 
-- Current WhatsApp number: +91 8856828107 
+- Previous WhatsApp number: +91 9420996107
+- Current WhatsApp number: +91 8856828107
 - WhatsApp links verified: ✅ PASS
 - Central configuration verified: ✅ PASS
 - Production WhatsApp CTA verified: ✅ PASS
 - Mobile floating WhatsApp CTA verified: ✅ PASS
 - Old WhatsApp references: 0
 - Final regression: ✅ PASS
+
+---
+
+## Final Production WhatsApp + Tidio Verification
+**Date:** 2026-09-03 | **Deployment commit:** aa48630 | **Production:** https://arti-enterprises-delta.vercel.app
+
+### Number Classification (git grep)
+| Number | Occurrences | Type | Status |
+|---|---|---|---|
+| 9420996107 | contact.html, main.js, site-config.js, hero3d.js | PHONE (tel: only) | ✅ Correct |
+| 9420996107 as WhatsApp | 0 | — | ✅ PASS |
+| 8856828107 | All WA links, buttons, footer, configurator | WHATSAPP | ✅ Correct |
+
+### WhatsApp Display & Links
+| Check | Result |
+|---|---|
+| Footer WhatsApp display text | ✅ `+91 8856828107 (WhatsApp)` |
+| JS hydration (main.js) uses whatsappDisplay | ✅ Fixed — no longer uses phoneDisplay |
+| All `wa.me` hrefs | ✅ All → `https://wa.me/918856828107` |
+| Old `wa.me/919420996107` count | ✅ 0 |
+| Phone `tel:+919420996107` preserved | ✅ Correct — intentional |
+
+### Tidio + WhatsApp Position (No Overlap)
+| Viewport | WhatsApp | Tidio | Overlap |
+|---|---|---|---|
+| Desktop 1440×900 | Bottom-left | Bottom-right | ✅ None |
+| Mobile 390×844 | Bottom-left | Bottom-right | ✅ None |
+| Mobile 375×812 | Bottom-left | Bottom-right | ✅ None |
+| Mobile 360×800 | Bottom-left | Bottom-right | ✅ None |
+
+### Final Regression Results
+| Check | Result |
+|---|---|
+| `npm run build` | ✅ PASS |
+| `npm run audit:forensic` | ✅ 0 real issues |
+| `npm run audit:routes` | ✅ 14/14 PASS |
+| `npm run audit:mobile` | ✅ **70/70 PASS** |
+| Console errors | ✅ 0 |
+| Network failures | ✅ 0 |
+| Horizontal overflow | ✅ 0 |
+
+**Deployment:** ✅ PASS  
+**WhatsApp display number:** `+91 8856828107`  
+**WhatsApp destination:** `https://wa.me/918856828107`  
+**Old WhatsApp destination:** 0  
+**Phone destination:** `+91 9420996107` (preserved — call only)  
+**Tidio/WhatsApp overlap:** ✅ PASS  
+**Live DOM verification:** ✅ PASS  
+**Final regression:** ✅ PASS
