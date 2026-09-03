@@ -22,6 +22,7 @@ function getSiteConfig() {
     phoneDisplay: site.phoneDisplay || '+91 9420996107',
     phoneHref: site.phoneHref || 'tel:+919420996107',
     whatsappNumber: site.whatsappNumber || '918856828107',
+    whatsappDisplay: site.whatsappDisplay || '+91 8856828107',
     whatsappBase: site.whatsappBase || 'https://wa.me/918856828107',
     whatsappGreeting: site.whatsappGreeting || 'Hello ARTI ENTERPRISES',
     email: site.email || 'artienterprises17@rediffmail.com',
@@ -135,9 +136,9 @@ function hydrateSiteLinks() {
     'whatsapp': { 
       attr: 'href', 
       val: (el) => buildWhatsAppUrl(el.dataset.whatsappText || site.whatsappGreeting),
-      text: `${site.phoneDisplay} (WhatsApp)` 
+      text: `${site.whatsappDisplay} (WhatsApp)` 
     },
-    'whatsapp-base': { attr: 'href', val: site.whatsappBase, text: `${site.phoneDisplay} (WhatsApp)` },
+    'whatsapp-base': { attr: 'href', val: site.whatsappBase, text: `${site.whatsappDisplay} (WhatsApp)` },
     'reply-promise': { text: site.contactReplyPromise },
     'description': { text: site.businessDescription },
     'about': { text: site.businessAbout },

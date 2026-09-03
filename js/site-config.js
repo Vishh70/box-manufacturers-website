@@ -10,6 +10,7 @@ window.ARTI_SITE = {
   phoneDisplay: '+91 9420996107',
   phoneHref: 'tel:+919420996107',
   whatsappNumber: '918856828107',
+  whatsappDisplay: '+91 8856828107',
   whatsappBase: 'https://wa.me/918856828107',
   whatsappGreeting: 'Hello ARTI ENTERPRISES',
   email: 'artienterprises17@rediffmail.com',
