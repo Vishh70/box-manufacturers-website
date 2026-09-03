@@ -167,6 +167,7 @@
         const site = (typeof window !== 'undefined' && window.ARTI_SITE) ? window.ARTI_SITE : {};
         const phone = site.phoneDisplay || '+91 9420996107';
         const email = site.email || 'artienterprises17@rediffmail.com';
+        const web = site.website ? site.website.replace(/^https?:\/\//, '') : 'arti-enterprises-delta.vercel.app';
 
         ctx.textAlign = 'center';
         ctx.font = `900 ${48*scale}px "Inter", Arial, sans-serif`;
@@ -174,7 +175,7 @@
          
         ctx.font = `600 ${36*scale}px "Inter", Arial, sans-serif`;
         ctx.fillText('Works: GAT NO 1297, Chikhali, Pune - 411062', 0, 340*scale);
-        ctx.fillText(`Email: ${email} | Web: arti-enterprises.vercel.app`, 0, 395*scale);
+        ctx.fillText(`Email: ${email} | Web: ${web}`, 0, 395*scale);
         ctx.font = `bold ${44*scale}px "Inter", Arial, sans-serif`;
         ctx.fillText(`WhatsApp: ${phone}`, 0, 465*scale);
         ctx.restore();

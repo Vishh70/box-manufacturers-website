@@ -32,10 +32,10 @@ When you purchase and connect a custom domain (e.g. `https://artienterprises.in`
 npm run domain:update -- https://artienterprises.in
 ```
 
-After updating the domain:
+#### 4. Forensic Domain, Asset & Schema Sweep
+Performs an automated repository-wide sweep checking for stale domains, broken local assets, case-sensitivity issues, duplicate SEO headers, single `<h1>` hierarchy, unverified claims, and product/blog slug integrity.
+
 ```bash
-npm run build
-npm run audit:routes
-git add . && git commit -m "chore: migrate canonical domain to artienterprises.in"
-git push origin main
+npm run audit:forensic
 ```
+

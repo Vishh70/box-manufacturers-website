@@ -91,14 +91,14 @@ Pimpri Chinchwad, Pune, Maharashtra 411062
 
 ```text
 You can view our products and request details here:
-https://arti-enterprises.vercel.app
+https://arti-enterprises-delta.vercel.app
 ```
 
 ### `/configurator`
 
 ```text
 Use our 3D box configurator to define your box size and requirement:
-https://arti-enterprises.vercel.app/configurator.html
+https://arti-enterprises-delta.vercel.app/configurator.html
 ```
 
 ### `/followup`
