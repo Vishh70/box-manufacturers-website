@@ -44,7 +44,7 @@
       description: article.metaDescription,
       image: imageUrl,
       datePublished: article.dateIso || '2026-01-15',
-      dateModified: '2026-03-01',
+      dateModified: '2026-09-03',
       author: {
         '@type': 'Organization',
         name: site.businessName || 'ARTI ENTERPRISES',
