@@ -19,7 +19,55 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://arti-enterprises.vercel.app/product-detail.html</loc>
+    <loc>https://arti-enterprises.vercel.app/product-detail.html?product=3ply-corrugated-box</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arti-enterprises.vercel.app/product-detail.html?product=5ply-heavy-duty-box</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arti-enterprises.vercel.app/product-detail.html?product=7ply-industrial-box</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arti-enterprises.vercel.app/product-detail.html?product=ecommerce-mailer-box</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arti-enterprises.vercel.app/product-detail.html?product=diecut-custom-box</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arti-enterprises.vercel.app/product-detail.html?product=custom-printed-box</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arti-enterprises.vercel.app/product-detail.html?product=food-grade-box</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arti-enterprises.vercel.app/product-detail.html?product=5ply-export-quality-box</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arti-enterprises.vercel.app/product-detail.html?product=3ply-flap-box-medium</loc>
     <lastmod>2026-09-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
