@@ -13,7 +13,7 @@
 const puppeteer = require('puppeteer-core');
 const chromeLauncher = require('chrome-launcher');
 
-const defaultBaseUrl = 'https://arti-enterprises-delta.vercel.app';
+const defaultBaseUrl = 'https://arti-enterprises.vercel.app';
 const baseUrl = process.argv[2] || defaultBaseUrl;
 
 const routes = [
