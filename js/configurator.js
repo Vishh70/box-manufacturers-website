@@ -517,8 +517,8 @@
     function buildDimensionLines(l, w, h) {
         const lineMat = new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.8 });
         const maxSpan = Math.max(l, w, h);
-        // Push offset to 65% of max span so it clears the flaps completely
-        const offset = Math.max(0.62, maxSpan * 0.65);
+        // Push offset to 70% of max span so it clears the flaps completely
+        const offset = Math.max(0.8, maxSpan * 0.7);
         const tickSize = Math.max(0.12, offset * 0.15);
 
         // LENGTH Line (along X axis, placed in front of the box at +Z)
@@ -532,7 +532,7 @@
         addTick(mainGroup, l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
         const lenLabel = makeLabel(formatDim(state.length), 'dim-label');
         if (lenLabel) {
-            lenLabel.position.set(0, -h / 2, w / 2 + offset + 0.35); // centered on X
+            lenLabel.position.set(0, -h / 2, w / 2 + offset + 0.45); // centered on X
             mainGroup.add(lenLabel);
         }
 
@@ -547,7 +547,7 @@
         addTick(mainGroup, l / 2 + offset, -h / 2, w / 2, tickSize, 0, 0, lineMat);
         const widLabel = makeLabel(formatDim(state.width), 'dim-label');
         if (widLabel) {
-            widLabel.position.set(l / 2 + offset + 0.35, -h / 2, 0); // centered on Z
+            widLabel.position.set(l / 2 + offset + 0.45, -h / 2, 0); // centered on Z
             mainGroup.add(widLabel);
         }
 
@@ -562,7 +562,7 @@
         addTick(mainGroup, -l / 2 - offset * 0.5, h / 2, -w / 2 - offset * 0.3, tickSize, 0, 0, lineMat);
         const hLabel = makeLabel(formatDim(state.height), 'dim-label');
         if (hLabel) {
-            hLabel.position.set(-l / 2 - offset * 0.5 - 0.45, 0, -w / 2 - offset * 0.3);
+            hLabel.position.set(-l / 2 - offset * 0.6 - 0.55, 0, -w / 2 - offset * 0.4);
             mainGroup.add(hLabel);
         }
     }
@@ -1078,7 +1078,10 @@
         const bounds = new THREE.Box3().setFromObject(mainGroup);
         const size = bounds.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z, 0.5);
-        const dist = maxDim / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov * 0.5))) * 1.5;
+        const vFov = THREE.MathUtils.degToRad(camera.fov * 0.5);
+        const distHeight = maxDim / (2 * Math.tan(vFov));
+        const distWidth = maxDim / (2 * Math.tan(vFov) * camera.aspect);
+        const dist = Math.max(distHeight, distWidth) * 1.25;
         zoomTarget = THREE.MathUtils.clamp(dist, ZOOM_MIN, ZOOM_MAX);
         if (groundPlane) groundPlane.position.y = bounds.min.y - 0.08;
     }

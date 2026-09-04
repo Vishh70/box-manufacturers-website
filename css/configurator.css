@@ -9,6 +9,10 @@
     align-items: start;
 }
 
+.cfg-layout > * {
+    min-width: 0;
+}
+
 /* ---- 3D Viewer Panel ---- */
 .cfg-viewer-panel {
     position: sticky;
@@ -666,7 +670,7 @@
 }
 
 /* ---- Responsive ---- */
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
     .cfg-layout {
         grid-template-columns: 1fr;
     }
@@ -690,7 +694,7 @@
     }
 
     .cfg-viewer {
-        height: 320px;
+        height: 360px;
         margin-bottom: 1rem;
     }
 
