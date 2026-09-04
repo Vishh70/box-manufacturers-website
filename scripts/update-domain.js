@@ -30,7 +30,8 @@ const cleanNewDomain = targetDomain.replace(/\/+$/, '');
 
 // Detect current domain from site-config.js
 const siteConfigPath = path.join(rootDir, 'js', 'site-config.js');
-let currentDomain = 'https://arti-enterprises-delta.vercel.app';
+let currentDomain = 'https://old-domain.vercel.app'; // Set this to whatever old domain you are moving from
+let targetDomainDefault = 'https://arti-enterprises.vercel.app'; // Set this to your new primary domain
 
 if (fs.existsSync(siteConfigPath)) {
   const configContent = fs.readFileSync(siteConfigPath, 'utf-8');

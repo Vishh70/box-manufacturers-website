@@ -2,7 +2,7 @@
 
 ## Executive Summary
 This QA report documents a full visual, functional, and layout inspection of the production website.
-**Production URL:** [https://arti-enterprises-delta.vercel.app](https://arti-enterprises-delta.vercel.app)
+**Production URL:** [https://arti-enterprises.vercel.app](https://arti-enterprises.vercel.app)
 **Test Date:** 2026-09-03
 **Browser:** Headless Chrome (via Puppeteer 98 full-page screenshots + Post-Fix Screenshots) & Production Verification
 **Screenshot Count:** 98 (7 viewports × 14 routes) + 3 post-fix re-tests

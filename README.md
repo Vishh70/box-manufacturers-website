@@ -40,7 +40,7 @@ The project is built as a high-performance, **pure Vanilla HTML5/CSS3/JavaScript
 | **Business** | ARTI ENTERPRISES |
 | **Industry** | Corrugated Packaging Manufacturer / B2B Industrial Packaging Supplier |
 | **Location** | GAT NO 1297, Chikhali, Pune, Maharashtra 411062 |
-| **Live Production URL** | [`https://arti-enterprises-delta.vercel.app`](https://arti-enterprises-delta.vercel.app) |
+| **Live Production URL** | [`https://arti-enterprises.vercel.app`](https://arti-enterprises.vercel.app) |
 | **Primary Audience** | B2B purchasing managers, factories, industrial OEMs, exporters, e-commerce brands |
 | **Product Lineup** | 3 Ply, 5 Ply, 7 Ply, die-cut mailers, custom printed, food-grade, and export corrugated boxes |
 | **Architecture** | Modern Multi-Page Static Site (Vanilla HTML5 / CSS3 / ES Modules) bundled with Vite |
@@ -273,7 +273,7 @@ Edit [`js/blog-data.js`](file:///c:/new%20project/box-manufacturers%20website%20
 ## SEO, Schema & Metadata
 
 - **Single `<h1>` Policy**: Every page has exactly one `<h1>` heading structured logically with `<h2>` and `<h3>` children.
-- **Canonical URLs**: Strictly standardized on `https://arti-enterprises-delta.vercel.app` across all pages.
+- **Canonical URLs**: Strictly standardized on `https://arti-enterprises.vercel.app` across all pages.
 - **JSON-LD Structured Data**:
   - `Organization` & `LocalBusiness` schema on homepage
   - `Product` schema with pricing and MOQ on product detail pages

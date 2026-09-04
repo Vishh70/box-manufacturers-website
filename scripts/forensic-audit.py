@@ -12,7 +12,7 @@ issues = []
 
 # 1. STALE DOMAINS AUDIT
 print("--- 1. Domain Consistency Audit ---")
-correct_domain = "arti-enterprises-delta.vercel.app"
+correct_domain = "arti-enterprises.vercel.app"
 
 stale_domain_occurrences = []
 for p in workspace.rglob("*"):
@@ -21,16 +21,15 @@ for p in workspace.rglob("*"):
     if p.suffix in ['.html', '.js', '.css', '.xml', '.txt', '.json', '.md']:
         try:
             content = p.read_text(encoding='utf-8')
-            matches = [m.start() for m in re.finditer(r'(?<!arti-enterprises-delta\.)arti-enterprises\.vercel\.app', content)]
+            matches = [m.start() for m in re.finditer(r'arti-enterprises-delta\.vercel\.app', content)]
             if matches:
-                # Discard match if it's actually part of "arti-enterprises-delta.vercel.app"
+                # Any match of -delta is now considered stale since arti-enterprises.vercel.app is primary
                 real_stale = []
                 for idx in matches:
                     start = max(0, idx - 15)
                     end = min(len(content), idx + 35)
                     snippet = content[start:end]
-                    if "arti-enterprises-delta.vercel.app" not in snippet:
-                        real_stale.append(idx)
+                    real_stale.append(idx)
                 if real_stale:
                     stale_domain_occurrences.append((p.relative_to(workspace), len(real_stale)))
         except Exception:

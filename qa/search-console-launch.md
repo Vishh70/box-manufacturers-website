@@ -1,12 +1,12 @@
 # ARTI ENTERPRISES — SEARCH CONSOLE LAUNCH
 
-**Production:** `https://arti-enterprises-delta.vercel.app`  
-**Sitemap:** `https://arti-enterprises-delta.vercel.app/sitemap.xml`  
-**Robots:** `https://arti-enterprises-delta.vercel.app/robots.txt`
+**Production:** `https://arti-enterprises.vercel.app`  
+**Sitemap:** `https://arti-enterprises.vercel.app/sitemap.xml`  
+**Robots:** `https://arti-enterprises.vercel.app/robots.txt`
 
 ## Verification
 
-**Property:** `https://arti-enterprises-delta.vercel.app`  
+**Property:** `https://arti-enterprises.vercel.app`  
 **Status:** VERIFIED
 
 ## Sitemap Submitted
@@ -19,14 +19,14 @@
 
 | URL | Crawl | Indexing | Canonical | Status |
 |---|---|---|---|---|
-| `https://arti-enterprises-delta.vercel.app/` | PENDING | PENDING | PENDING | PENDING |
-| `https://arti-enterprises-delta.vercel.app/products.html` | PENDING | PENDING | PENDING | PENDING |
-| `https://arti-enterprises-delta.vercel.app/about.html` | PENDING | PENDING | PENDING | PENDING |
-| `https://arti-enterprises-delta.vercel.app/contact.html` | PENDING | PENDING | PENDING | PENDING |
-| `https://arti-enterprises-delta.vercel.app/configurator.html` | PENDING | PENDING | PENDING | PENDING |
-| `https://arti-enterprises-delta.vercel.app/product-detail.html?product=3ply-corrugated-box` | PENDING | PENDING | PENDING | PENDING |
-| `https://arti-enterprises-delta.vercel.app/blog.html` | PENDING | PENDING | PENDING | PENDING |
-| `https://arti-enterprises-delta.vercel.app/blog-article.html?slug=how-to-choose-the-right-corrugated-box` | PENDING | PENDING | PENDING | PENDING |
+| `https://arti-enterprises.vercel.app/` | PENDING | PENDING | PENDING | PENDING |
+| `https://arti-enterprises.vercel.app/products.html` | PENDING | PENDING | PENDING | PENDING |
+| `https://arti-enterprises.vercel.app/about.html` | PENDING | PENDING | PENDING | PENDING |
+| `https://arti-enterprises.vercel.app/contact.html` | PENDING | PENDING | PENDING | PENDING |
+| `https://arti-enterprises.vercel.app/configurator.html` | PENDING | PENDING | PENDING | PENDING |
+| `https://arti-enterprises.vercel.app/product-detail.html?product=3ply-corrugated-box` | PENDING | PENDING | PENDING | PENDING |
+| `https://arti-enterprises.vercel.app/blog.html` | PENDING | PENDING | PENDING | PENDING |
+| `https://arti-enterprises.vercel.app/blog-article.html?slug=how-to-choose-the-right-corrugated-box` | PENDING | PENDING | PENDING | PENDING |
 
 ## Issues
 
@@ -36,7 +36,7 @@
 ## Actions Taken
 
 *List actual indexing requests or fixes.*
-- SEO files (`robots.txt`, `sitemap.xml`) verified live on production. All 14 routes correctly point to the `arti-enterprises-delta.vercel.app` domain.
+- SEO files (`robots.txt`, `sitemap.xml`) verified live on production. All 14 routes correctly point to the `arti-enterprises.vercel.app` domain.
 
 ## Final Status
 

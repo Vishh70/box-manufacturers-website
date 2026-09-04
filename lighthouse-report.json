@@ -1,9 +1,9 @@
 {
   "lighthouseVersion": "13.4.1",
-  "requestedUrl": "https://arti-enterprises-delta.vercel.app/",
-  "mainDocumentUrl": "https://arti-enterprises-delta.vercel.app/",
-  "finalDisplayedUrl": "https://arti-enterprises-delta.vercel.app/",
-  "finalUrl": "https://arti-enterprises-delta.vercel.app/",
+  "requestedUrl": "https://arti-enterprises.vercel.app/",
+  "mainDocumentUrl": "https://arti-enterprises.vercel.app/",
+  "finalDisplayedUrl": "https://arti-enterprises.vercel.app/",
+  "finalUrl": "https://arti-enterprises.vercel.app/",
   "fetchTime": "2026-09-03T05:16:57.008Z",
   "gatherMode": "navigation",
   "runWarnings": [],
@@ -258,7 +258,7 @@
         ],
         "items": [
           {
-            "url": "https://arti-enterprises-delta.vercel.app/",
+            "url": "https://arti-enterprises.vercel.app/",
             "responseTime": 6
           }
         ],
@@ -561,25 +561,25 @@
         ],
         "items": [
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/main-CSWvoUo-.js",
+            "url": "https://arti-enterprises.vercel.app/assets/main-CSWvoUo-.js",
             "total": 23116.712000000174,
             "scripting": 22023.984000000175,
             "scriptParseCompile": 0.268
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/index-BToXYqHc.js",
+            "url": "https://arti-enterprises.vercel.app/assets/index-BToXYqHc.js",
             "total": 7208.807999999996,
             "scripting": 7176.9959999999965,
             "scriptParseCompile": 0.436
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/",
+            "url": "https://arti-enterprises.vercel.app/",
             "total": 3552.2239999999997,
             "scripting": 34.916,
             "scriptParseCompile": 0.9520000000000001
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
+            "url": "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
             "total": 3278.3359999999975,
             "scripting": 1785.379999999998,
             "scriptParseCompile": 0.596
@@ -718,7 +718,7 @@
         ],
         "items": [
           {
-            "url": "https://arti-enterprises-delta.vercel.app/",
+            "url": "https://arti-enterprises.vercel.app/",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -736,7 +736,7 @@
             "entity": "vercel.app"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/index-BToXYqHc.js",
+            "url": "https://arti-enterprises.vercel.app/assets/index-BToXYqHc.js",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -754,7 +754,7 @@
             "entity": "vercel.app"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/main-CSWvoUo-.js",
+            "url": "https://arti-enterprises.vercel.app/assets/main-CSWvoUo-.js",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -773,7 +773,7 @@
             "entity": "vercel.app"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
+            "url": "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -792,7 +792,7 @@
             "entity": "vercel.app"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/main-DwghNxHy.css",
+            "url": "https://arti-enterprises.vercel.app/assets/main-DwghNxHy.css",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -810,7 +810,7 @@
             "entity": "vercel.app"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Bmi0TZgT.css",
+            "url": "https://arti-enterprises.vercel.app/assets/configurator-Bmi0TZgT.css",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -828,7 +828,7 @@
             "entity": "vercel.app"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/about-factory-BH9IqdrW.png",
+            "url": "https://arti-enterprises.vercel.app/assets/about-factory-BH9IqdrW.png",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -846,7 +846,7 @@
             "entity": "vercel.app"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/5ply_corrugated_box-DBmpkfKM.png",
+            "url": "https://arti-enterprises.vercel.app/assets/5ply_corrugated_box-DBmpkfKM.png",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -864,7 +864,7 @@
             "entity": "vercel.app"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/Custom%20Printed%20Box-CwGhNRtv.jpg",
+            "url": "https://arti-enterprises.vercel.app/assets/Custom%20Printed%20Box-CwGhNRtv.jpg",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -971,7 +971,7 @@
             "entity": "Google Fonts"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/product-3ply-B41W6xS3.png",
+            "url": "https://arti-enterprises.vercel.app/assets/product-3ply-B41W6xS3.png",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -989,7 +989,7 @@
             "entity": "vercel.app"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/product-5ply-BOMs9nrj.png",
+            "url": "https://arti-enterprises.vercel.app/assets/product-5ply-BOMs9nrj.png",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -1007,7 +1007,7 @@
             "entity": "vercel.app"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/product-7ply-Bw9McriC.png",
+            "url": "https://arti-enterprises.vercel.app/assets/product-7ply-Bw9McriC.png",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -1132,7 +1132,7 @@
             "entity": "tidio.co"
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/favicon-DoWN6wHK.png",
+            "url": "https://arti-enterprises.vercel.app/assets/favicon-DoWN6wHK.png",
             "sessionTargetType": "page",
             "protocol": "h2",
             "cache": "none",
@@ -1227,73 +1227,73 @@
           "initiators": [
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 48,
               "columnNumber": 68
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 49,
               "columnNumber": 72
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 50,
               "columnNumber": 80
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 51,
               "columnNumber": 70
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 52,
               "columnNumber": 78
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 124,
               "columnNumber": 100
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 131,
               "columnNumber": 178
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 139,
               "columnNumber": 135
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 569,
               "columnNumber": 82
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 570,
               "columnNumber": 87
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 571,
               "columnNumber": 80
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/assets/main-DwghNxHy.css",
+              "url": "https://arti-enterprises.vercel.app/assets/main-DwghNxHy.css",
               "lineNumber": 0,
               "columnNumber": 0
             },
@@ -1303,25 +1303,25 @@
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 569,
               "columnNumber": 91
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 569,
               "columnNumber": 91
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 569,
               "columnNumber": 91
             },
             {
               "type": "parser",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "lineNumber": 571,
               "columnNumber": 80
             }
@@ -1375,7 +1375,7 @@
             "rtt": 6.792999999999999
           },
           {
-            "origin": "https://arti-enterprises-delta.vercel.app",
+            "origin": "https://arti-enterprises.vercel.app",
             "rtt": 5.58
           },
           {
@@ -1414,7 +1414,7 @@
         ],
         "items": [
           {
-            "origin": "https://arti-enterprises-delta.vercel.app",
+            "origin": "https://arti-enterprises.vercel.app",
             "serverResponseTime": 495.398
           },
           {
@@ -2248,17 +2248,17 @@
         ],
         "items": [
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/main-CSWvoUo-.js",
+            "url": "https://arti-enterprises.vercel.app/assets/main-CSWvoUo-.js",
             "duration": 10000,
             "startTime": 2406.138
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
+            "url": "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
             "duration": 3612.999999999998,
             "startTime": 12969.138
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/",
+            "url": "https://arti-enterprises.vercel.app/",
             "duration": 1072,
             "startTime": 1334.138
           },
@@ -2278,7 +2278,7 @@
             "startTime": 12406.138
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/",
+            "url": "https://arti-enterprises.vercel.app/",
             "duration": 452,
             "startTime": 16748.138
           },
@@ -2313,7 +2313,7 @@
             "startTime": 21770.138
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
+            "url": "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
             "duration": 168,
             "startTime": 18331.138
           },
@@ -2338,12 +2338,12 @@
             "startTime": 21051.138
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
+            "url": "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
             "duration": 101,
             "startTime": 20749.138
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
+            "url": "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
             "duration": 99,
             "startTime": 18587.138
           }
@@ -2357,9 +2357,9 @@
         "debugData": {
           "type": "debugdata",
           "urls": [
-            "https://arti-enterprises-delta.vercel.app/assets/main-CSWvoUo-.js",
-            "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
-            "https://arti-enterprises-delta.vercel.app/",
+            "https://arti-enterprises.vercel.app/assets/main-CSWvoUo-.js",
+            "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
+            "https://arti-enterprises.vercel.app/",
             "_lighthouse-eval.js",
             "https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js",
             "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
@@ -3035,19 +3035,19 @@
             "unusedBytes": 448
           },
           {
-            "name": "https://arti-enterprises-delta.vercel.app/assets/index-BToXYqHc.js",
+            "name": "https://arti-enterprises.vercel.app/assets/index-BToXYqHc.js",
             "resourceBytes": 6940,
             "encodedBytes": 0,
             "unusedBytes": 349
           },
           {
-            "name": "https://arti-enterprises-delta.vercel.app/assets/main-CSWvoUo-.js",
+            "name": "https://arti-enterprises.vercel.app/assets/main-CSWvoUo-.js",
             "resourceBytes": 8406,
             "encodedBytes": 0,
             "unusedBytes": 2765
           },
           {
-            "name": "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
+            "name": "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
             "resourceBytes": 19261,
             "encodedBytes": 0,
             "unusedBytes": 8206
@@ -4354,11 +4354,11 @@
             "totalBytes": 121555
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/Custom%20Printed%20Box-CwGhNRtv.jpg",
+            "url": "https://arti-enterprises.vercel.app/assets/Custom%20Printed%20Box-CwGhNRtv.jpg",
             "totalBytes": 108278
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/about-factory-BH9IqdrW.png",
+            "url": "https://arti-enterprises.vercel.app/assets/about-factory-BH9IqdrW.png",
             "totalBytes": 94717
           },
           {
@@ -4366,11 +4366,11 @@
             "totalBytes": 73473
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/product-7ply-Bw9McriC.png",
+            "url": "https://arti-enterprises.vercel.app/assets/product-7ply-Bw9McriC.png",
             "totalBytes": 53590
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/5ply_corrugated_box-DBmpkfKM.png",
+            "url": "https://arti-enterprises.vercel.app/assets/5ply_corrugated_box-DBmpkfKM.png",
             "totalBytes": 48590
           },
           {
@@ -4713,7 +4713,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
+              "url": "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
               "urlProvider": "network",
               "line": 0,
               "column": 2281
@@ -4732,7 +4732,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -4789,7 +4789,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -4827,7 +4827,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -4846,7 +4846,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -4960,7 +4960,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -4979,7 +4979,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -5017,7 +5017,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -5074,7 +5074,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -5131,7 +5131,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -5169,7 +5169,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -5188,7 +5188,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -5226,7 +5226,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/assets/main-CSWvoUo-.js",
+              "url": "https://arti-enterprises.vercel.app/assets/main-CSWvoUo-.js",
               "urlProvider": "network",
               "line": 1,
               "column": 2279
@@ -5245,7 +5245,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -5264,7 +5264,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -5283,7 +5283,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -5321,7 +5321,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/",
+              "url": "https://arti-enterprises.vercel.app/",
               "urlProvider": "network",
               "line": -2,
               "column": -2
@@ -5359,7 +5359,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
+              "url": "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
               "urlProvider": "network",
               "line": 0,
               "column": 2281
@@ -5378,7 +5378,7 @@
             },
             "source": {
               "type": "source-location",
-              "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Dkf42vNP.js",
+              "url": "https://arti-enterprises.vercel.app/assets/configurator-Dkf42vNP.js",
               "urlProvider": "network",
               "line": 0,
               "column": 11046
@@ -6083,7 +6083,7 @@
               "snippet": "<img src=\"/assets/Custom%20Printed%20Box-CwGhNRtv.jpg\" alt=\"Branded Box Proof\" onerror=\"this.src='images/hero-banner.png'\">",
               "nodeLabel": "Branded Box Proof"
             },
-            "url": "https://arti-enterprises-delta.vercel.app/assets/Custom%20Printed%20Box-CwGhNRtv.jpg",
+            "url": "https://arti-enterprises.vercel.app/assets/Custom%20Printed%20Box-CwGhNRtv.jpg",
             "totalBytes": 108057,
             "wastedBytes": 84466,
             "subItems": {
@@ -6117,7 +6117,7 @@
               "snippet": "<img src=\"/assets/about-factory-BH9IqdrW.png\" alt=\"Cardboard Box Factory Manufacturing\">",
               "nodeLabel": "Cardboard Box Factory Manufacturing"
             },
-            "url": "https://arti-enterprises-delta.vercel.app/assets/about-factory-BH9IqdrW.png",
+            "url": "https://arti-enterprises.vercel.app/assets/about-factory-BH9IqdrW.png",
             "totalBytes": 94517,
             "wastedBytes": 49607,
             "subItems": {
@@ -6151,7 +6151,7 @@
               "snippet": "<img loading=\"lazy\" src=\"/assets/product-7ply-Bw9McriC.png\" alt=\"7 Ply Industrial Box\">",
               "nodeLabel": "7 Ply Industrial Box"
             },
-            "url": "https://arti-enterprises-delta.vercel.app/assets/product-7ply-Bw9McriC.png",
+            "url": "https://arti-enterprises.vercel.app/assets/product-7ply-Bw9McriC.png",
             "totalBytes": 53409,
             "wastedBytes": 12708,
             "subItems": {
@@ -6181,7 +6181,7 @@
               "snippet": "<img src=\"/assets/5ply_corrugated_box-DBmpkfKM.png\" alt=\"Premium 5-Ply Corrugated Box\" style=\"width: 100%; height: 100%; object-fit: contain; transform: scale(1.1);\">",
               "nodeLabel": "Premium 5-Ply Corrugated Box"
             },
-            "url": "https://arti-enterprises-delta.vercel.app/assets/5ply_corrugated_box-DBmpkfKM.png",
+            "url": "https://arti-enterprises.vercel.app/assets/5ply_corrugated_box-DBmpkfKM.png",
             "totalBytes": 48420,
             "wastedBytes": 10181,
             "subItems": {
@@ -6367,13 +6367,13 @@
               "type": "network-tree",
               "chains": {
                 "D93CDDBA007221F8DF096F6CD0C00956": {
-                  "url": "https://arti-enterprises-delta.vercel.app/",
+                  "url": "https://arti-enterprises.vercel.app/",
                   "navStartToEndTime": 571,
                   "transferSize": 9664,
                   "isLongest": true,
                   "children": {
                     "3812.5": {
-                      "url": "https://arti-enterprises-delta.vercel.app/assets/main-DwghNxHy.css",
+                      "url": "https://arti-enterprises.vercel.app/assets/main-DwghNxHy.css",
                       "navStartToEndTime": 852,
                       "transferSize": 8869,
                       "isLongest": true,
@@ -6396,13 +6396,13 @@
                       }
                     },
                     "3812.2": {
-                      "url": "https://arti-enterprises-delta.vercel.app/assets/index-BToXYqHc.js",
+                      "url": "https://arti-enterprises.vercel.app/assets/index-BToXYqHc.js",
                       "navStartToEndTime": 1735,
                       "transferSize": 3138,
                       "children": {}
                     },
                     "3812.6": {
-                      "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Bmi0TZgT.css",
+                      "url": "https://arti-enterprises.vercel.app/assets/configurator-Bmi0TZgT.css",
                       "navStartToEndTime": 1064,
                       "transferSize": 3183,
                       "children": {}
@@ -6576,11 +6576,11 @@
         ],
         "items": [
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/configurator-Bmi0TZgT.css",
+            "url": "https://arti-enterprises.vercel.app/assets/configurator-Bmi0TZgT.css",
             "totalBytes": 3183
           },
           {
-            "url": "https://arti-enterprises-delta.vercel.app/assets/main-DwghNxHy.css",
+            "url": "https://arti-enterprises.vercel.app/assets/main-DwghNxHy.css",
             "totalBytes": 8869,
             "wastedMs": 156
           },
@@ -7778,7 +7778,7 @@
     {
       "name": "vercel.app",
       "origins": [
-        "https://arti-enterprises-delta.vercel.app"
+        "https://arti-enterprises.vercel.app"
       ],
       "isFirstParty": true,
       "isUnrecognized": true

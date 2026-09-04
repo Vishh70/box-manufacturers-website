@@ -167,7 +167,7 @@
         const site = (typeof window !== 'undefined' && window.ARTI_SITE) ? window.ARTI_SITE : {};
         const phone = site.phoneDisplay || '+91 9420996107';
         const email = site.email || 'artienterprises17@rediffmail.com';
-        const web = site.website ? site.website.replace(/^https?:\/\//, '') : 'arti-enterprises-delta.vercel.app';
+        const web = site.website ? site.website.replace(/^https?:\/\//, '') : 'arti-enterprises.vercel.app';
 
         ctx.textAlign = 'center';
         ctx.font = `900 ${48*scale}px "Inter", Arial, sans-serif`;
