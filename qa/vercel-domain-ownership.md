@@ -1,55 +1,103 @@
 # Vercel Domain Ownership Report
 
-**Date:** 2026-09-03  
-**Current production:** https://arti-enterprises-delta.vercel.app  
-**Target URL:** https://arti-enterprises.vercel.app  
+**Date:** 2026-09-04  
+**Investigator:** Automated Vercel CLI + API inspection  
+**Target:** `https://arti-enterprises.vercel.app`  
+**Current production:** `https://arti-enterprises-delta.vercel.app`
 
 ---
 
-## Ownership Result: CASE A ✅
+## Result: CASE B — Another Account Owns It
 
-The `arti-enterprises.vercel.app` alias belongs to **your own Vercel account/team**.
+The alias `arti-enterprises.vercel.app` is **NOT** owned by your current Vercel team. It belongs to a different Vercel account/project that you do not control from your current CLI login.
 
-### Evidence from `vercel alias ls`
+---
 
-| Source Deployment | Alias |
+## Evidence
+
+### 1. Your Vercel Identity
+```
+Account: vishnuaware70-2124
+Team: vishnuaware70-2124s-projects (team_Lrz0bdYveeHcTbOkhaWgrPU2)
+```
+This is the **only** team on the account. No other teams exist.
+
+### 2. Your Projects
+| Project | Production URL |
 |---|---|
-| `arti-enterprises-5lvzc0w8u-...` | `arti-enterprises-delta.vercel.app` ✅ (current production) |
-| `arti-enterprises-5lvzc0w8u-...` | `arti-enterprises-vishnuaware70-2124s-projects.vercel.app` |
-| `arti-enterprises-5lvzc0w8u-...` | `arti-enterprises-git-main-vishnuaware70-2124s-projects.vercel.app` |
+| `arti-enterprises` | `https://arti-enterprises-delta.vercel.app` |
+| `frontend` | `https://grievanceiq-app.vercel.app` |
+| `smartnivad` | `https://smartnivad.vercel.app` |
 
-> [!IMPORTANT]
-> The old `https://arti-enterprises.vercel.app` (without `-delta`) is **NOT** listed in your alias list.
-> This means it belongs to a **different Vercel account or an orphaned project** that is no longer accessible under `vishnuaware70-2124s-projects`.
+`arti-enterprises.vercel.app` is **not** listed as a production URL for any of these.
 
-### Your team/projects
-- **Team:** `vishnuaware70-2124s-projects`
-- **Project:** `arti-enterprises` → Latest production: `arti-enterprises-delta.vercel.app`
-- **Other projects:** `frontend` (grievanceiq-app), `smartnivad`
+### 3. Your Aliases (vercel alias ls)
+| Alias | Owner |
+|---|---|
+| `arti-enterprises-delta.vercel.app` | ✅ Your team |
+| `arti-enterprises-git-main-...vercel.app` | ✅ Your team |
+| `arti-enterprises-vishnuaware70-...vercel.app` | ✅ Your team |
+| `arti-enterprises.vercel.app` | ❌ **NOT listed** |
+
+### 4. Domain Add Attempt
+```
+vercel domains add arti-enterprises.vercel.app
+→ Error: The chosen alias "arti-enterprises.vercel.app" is already in use. (403)
+```
+
+### 5. Inspect Attempt
+```
+vercel inspect arti-enterprises.vercel.app
+→ Error: Can't find the deployment "arti-enterprises.vercel.app"
+   under the context "vishnuaware70-2124s-projects"
+```
+
+This confirms the alias exists but belongs to a **different** Vercel project/team.
 
 ---
 
-## Conclusion
+## What This Means
 
-The old `https://arti-enterprises.vercel.app` URL is owned by a **different or orphaned Vercel account** — it is not listed under your team's alias list. You **cannot** claim or transfer it without Vercel support intervention.
-
-**Recommended action:**
-
-> [!NOTE]  
-> **Option 1 (Recommended):** Purchase a custom domain (e.g., `artienterprises.in` or `www.artienterprises.in`) and connect it to your current Vercel project. You own it permanently, independent of Vercel's infrastructure.
->
-> **Option 2:** Contact Vercel support to reclaim `arti-enterprises.vercel.app` if the old account belongs to you. This is not guaranteed.
+The URL `https://arti-enterprises.vercel.app` was likely created by an earlier Vercel project — possibly under a different Vercel account, a deleted project, or a previous team scope. Because Vercel `.vercel.app` aliases are globally unique, you cannot claim it from your current team.
 
 ---
 
-## Current Production (unchanged)
+## Options
 
-**Keep:** `https://arti-enterprises-delta.vercel.app` as production until a custom domain is ready.
+### Option 1: Recover via Vercel Support (Uncertain)
+Contact Vercel support and explain that `arti-enterprises.vercel.app` was previously yours and is now orphaned. Vercel may be able to release the alias. **This is not guaranteed.**
+
+### Option 2: Purchase a Custom Domain (Recommended)
+Buy a domain you own permanently, such as:
+- `artienterprises.in`
+- `artienterprises.com`
+- `arti-enterprises.in`
+
+Then add it to your current Vercel project via **Project Settings → Domains**. This is the professional, permanent solution that doesn't depend on Vercel's subdomain system.
+
+### Option 3: Keep the Current URL
+Continue using `https://arti-enterprises-delta.vercel.app` as production. It works, it's verified, and Google Search Console is already set up for it.
+
+---
+
+## Current Production Status (Unchanged)
 
 | Setting | Value |
 |---|---|
-| Production URL | https://arti-enterprises-delta.vercel.app |
+| Production URL | `https://arti-enterprises-delta.vercel.app` |
 | Production changed | **NO** |
-| Canonical URLs | **NOT changed** — awaiting custom domain |
+| Canonical URLs | **NOT changed** |
 | Sitemap | **NOT changed** |
 | robots.txt | **NOT changed** |
+| WhatsApp | `+91 7066959787` ✅ |
+| Phone | `+91 9420996107` ✅ |
+| Search Console | Verified for `-delta` URL ✅ |
+
+---
+
+## Action Required
+
+> [!IMPORTANT]
+> Do **NOT** modify the current production deployment, canonical URLs, or SEO configuration until the domain question is resolved.
+>
+> The working website at `arti-enterprises-delta.vercel.app` must remain operational.
