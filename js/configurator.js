@@ -204,6 +204,53 @@
         return tex;
     }
 
+    /* ── WASHBOARD BUMP MAP ── */
+    function createWashboardBumpMap(ply) {
+        const key = 'washboard_' + ply;
+        if (textureCache[key]) return textureCache[key];
+
+        const size = 512;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        // Base fiber noise
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(0, 0, size, size);
+        for (let i = 0; i < 2000; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+            ctx.fillRect(Math.random() * size, Math.random() * size, 2, 2);
+        }
+
+        // Vertical washboard lines
+        const data = PLY_DATA[ply] || PLY_DATA[3];
+        const hasFlute = data.layerCount >= 3;
+        if (hasFlute) {
+            const flutes = 32; 
+            const fluteWidth = size / flutes;
+            for (let i = 0; i < flutes; i++) {
+                const x = i * fluteWidth;
+                const grad = ctx.createLinearGradient(x, 0, x + fluteWidth, 0);
+                grad.addColorStop(0, 'rgba(0, 0, 0, 0.08)');
+                grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.08)');
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0.08)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(x, 0, Math.ceil(fluteWidth), size);
+            }
+        }
+
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        // Tile depending on box size, we'll repeat this at material level or here
+        tex.repeat.set(1, 1);
+        if (renderer && renderer.capabilities && typeof renderer.capabilities.getMaxAnisotropy === 'function') {
+            tex.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+        }
+        textureCache[key] = tex;
+        return tex;
+    }
+
     /* ── THREE.JS SCENE ── */
     function setupScene(container) {
         scene = new THREE.Scene();
@@ -369,14 +416,22 @@
         // Enhance exterior with fiber bump map
         const materialExterior = createBoxMaterial(ply);
         const tex = createKraftTexture();
-        materialExterior.bumpMap = tex;
-        materialExterior.bumpScale = 0.0035;
+        const bumpTex = createWashboardBumpMap(ply);
+        
+        // Adjust repeat based on dimensions so flutes scale correctly
+        const repeatU = (l / 100);
+        const repeatV = (h / 100);
+        bumpTex.repeat.set(repeatU, repeatV);
+        bumpTex.wrapS = bumpTex.wrapT = THREE.RepeatWrapping;
+
+        materialExterior.bumpMap = bumpTex;
+        materialExterior.bumpScale = 0.008; // Stronger to show washboard
         materialExterior.needsUpdate = true;
 
         const materialInterior = new THREE.MeshStandardMaterial({
             map: tex,
-            bumpMap: tex,
-            bumpScale: 0.002,
+            bumpMap: bumpTex,
+            bumpScale: 0.005,
             color: 0xE2CEAD, // Lighter, premium unbleached interior
             roughness: 0.8,
             metalness: 0.02
@@ -431,17 +486,18 @@
         });
 
         /* ── REALISTIC OPEN FLAPS ── */
-        const flapL_major = l;
+        // Reduce flap lengths slightly (by 2*visualThickness) to simulate die-cut corner slots
+        const flapL_major = l - (visualThickness * 2.1);
         const flapW_major = w / 2;
-        const flapL_minor = w - (visualThickness * 2);
+        const flapL_minor = w - (visualThickness * 4.1);
         const flapW_minor = l / 2;
 
-        // Upward leaning open flaps. 0 = perfectly horizontal flat. 
-        // -PI/2 (approx -1.57) = closed vertically inwards.
-        const angleFront = -0.85; 
-        const angleBack = 0.85;
-        const angleLeft = -0.7;
-        const angleRight = 0.7;
+        // Upward leaning open flaps with slight organic randomness
+        const randomOffset = () => (Math.random() * 0.1) - 0.05;
+        const angleFront = -0.85 + randomOffset(); 
+        const angleBack = 0.85 + randomOffset();
+        const angleLeft = -0.7 + randomOffset();
+        const angleRight = 0.7 + randomOffset();
 
         // Front Flap
         const frontFlapGeo = new THREE.BoxGeometry(flapL_major, visualThickness, flapW_major);
