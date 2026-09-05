@@ -1,25 +1,25 @@
 # ARTI ENTERPRISES — E2E CUSTOMER JOURNEY REPORT
 Production: https://arti-enterprises.vercel.app
-Date: 2026-09-04
+Date: 2026-09-05
 Browser: Puppeteer Chromium
 
 ## Summary
 Product Journey: PASS
-Configurator Journey: PASS
-Contact Journey: PASS
-Header Navigation: PASS
-Footer Navigation: PASS
-Blog: PASS
+Configurator Journey: FAIL
+Contact Journey: FAIL
+Header Navigation: FAIL
+Footer Navigation: FAIL
+Blog: FAIL
 Product Relationships: PASS
-Mobile Navigation: PASS
+Mobile Navigation: FAIL
 WhatsApp: PASS
-Phone: PASS
+Phone: FAIL
 Console: PASS
 Network: FAIL
 Overflow: PASS
 
 ## Product Tests
-9/9
+0/9
 
 ## WhatsApp
 Display: +91 7066959787
@@ -29,7 +29,7 @@ Phone: +91 9420996107
 ## Defects
 | ID | Journey | Problem | Severity | Evidence |
 |---|---|---|---|---|
-| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |
+| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-NETWORK | Global | https://code.tidio.co/y2bxuzjr7ypy8torikaupagsfopmdlpk.js | Medium | No failures |\n| ERR-EXECUTION | Core | Navigation timeout of 30000 ms exceeded | Critical | Pass |
 
 ## Final Result
 FAIL

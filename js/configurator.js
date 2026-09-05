@@ -65,20 +65,21 @@
         exploded: false
     };
 
-    let scene, camera, renderer, mainGroup, labelRenderer, groundPlane;
+    let scene, camera, renderer, mainGroup, boxGroup, annotationGroup, labelRenderer, groundPlane;
+    let boxCenter = new Float32Array(3); /* cached box center for lookAt */
     let isDragging = false;
     let previousMouse = { x: 0, y: 0 };
-    let rotationTarget = { x: -0.3, y: 0.5 };
-    let rotationCurrent = { x: -0.3, y: 0.5 };
+    let rotationTarget = { x: -0.35, y: 0.6 };
+    let rotationCurrent = { x: -0.35, y: 0.6 };
     const INERTIA = 0.06;
     let zoomTarget = 5;
     let zoomCurrent = 5;
     const ZOOM_MIN = 2.5;
     const ZOOM_MAX = 10;
-    const AUTO_ROTATE_SPEED = 0.42;
-    const AUTO_ROTATE_DELAY = 1200;
-    const FLOAT_AMPLITUDE = 0.07;
-    const FLOAT_SPEED = 1.35;
+    const AUTO_ROTATE_SPEED = 0.25;
+    const AUTO_ROTATE_DELAY = 2500;
+    const FLOAT_AMPLITUDE = 0.04;
+    const FLOAT_SPEED = 1.0;
 
     /* ── keep a list of CSS2D labels so we can clean them up ── */
     let css2dLabels = [];
@@ -260,10 +261,9 @@
         fillLight.position.set(6, 4, -4);
         scene.add(fillLight);
 
-        /* Ground shadow plane */
+        /* Ground shadow plane — soft studio shadow */
         const groundGeo = new THREE.PlaneGeometry(20, 20);
-        // Darkened shadow opacity from 0.12 to 0.25 to make it distinct like the reference
-        const groundMat = new THREE.ShadowMaterial({ opacity: 0.25 });
+        const groundMat = new THREE.ShadowMaterial({ opacity: 0.15 });
         groundPlane = new THREE.Mesh(groundGeo, groundMat);
         groundPlane.rotation.x = -Math.PI / 2;
         groundPlane.position.y = -0.8;
@@ -332,6 +332,10 @@
         clearLabels();
 
         mainGroup = new THREE.Group();
+        boxGroup = new THREE.Group();
+        annotationGroup = new THREE.Group();
+        mainGroup.add(boxGroup);
+        mainGroup.add(annotationGroup);
 
         const scale = 0.005;
         const l = state.length * scale;
@@ -353,8 +357,8 @@
 
     /* ── SOLID BOX ── */
     function buildSolidBox(l, w, h, ply, thickness) {
-        // Subtle thickness boost, not too blocky
-        const visualThickness = Math.max(thickness * 1.1, 0.06);
+        // Pronounced thickness boost to clearly show layer geometry on edges
+        const visualThickness = Math.max(thickness * 1.5, 0.08);
         
         // Enhance exterior with fiber bump map
         const materialExterior = createBoxMaterial(ply);
@@ -372,27 +376,30 @@
             metalness: 0.02
         });
 
-        const edgeColor = 0x907248; // Darkened the corrugated edge color
-        const edgeMaterial = new THREE.MeshStandardMaterial({
-            color: edgeColor, roughness: 1.0, metalness: 0.0,
-            bumpMap: createCorrugatedBumpMap(), bumpScale: 0.04 // Deeper flutes
+        const edgeMatU = new THREE.MeshStandardMaterial({
+            map: createLayeredEdgeCanvas(ply, true, false),
+            bumpMap: createLayeredEdgeCanvas(ply, true, true), 
+            bumpScale: 0.03, roughness: 0.9, metalness: 0.0
+        });
+        const edgeMatV = new THREE.MeshStandardMaterial({
+            map: createLayeredEdgeCanvas(ply, false, false),
+            bumpMap: createLayeredEdgeCanvas(ply, false, true), 
+            bumpScale: 0.03, roughness: 0.9, metalness: 0.0
         });
 
         const frontBackW = l;
         const sideW = w - (visualThickness * 2);
 
-        // 0: right, 1: left, 2: top, 3: bottom, 4: front (ext), 5: back (int)
-        const frontMats = [edgeMaterial, edgeMaterial, edgeMaterial, edgeMaterial, materialExterior, materialInterior];
-        // 0: right, 1: left, 2: top, 3: bottom, 4: front (int), 5: back (ext)
-        const backMats = [edgeMaterial, edgeMaterial, edgeMaterial, edgeMaterial, materialInterior, materialExterior];
+        // U thickness for left/right (0, 1). V thickness for top/bottom (2, 3)
+        const frontMats = [edgeMatU, edgeMatU, edgeMatV, edgeMatV, materialExterior, materialInterior];
+        const backMats = [edgeMatU, edgeMatU, edgeMatV, edgeMatV, materialInterior, materialExterior];
         
-        // 0: right (ext), 1: left (int), 2: top, 3: bottom, 4: front, 5: back
-        const rightMats = [materialExterior, materialInterior, edgeMaterial, edgeMaterial, edgeMaterial, edgeMaterial];
-        // 0: right (int), 1: left (ext), 2: top, 3: bottom, 4: front, 5: back
-        const leftMats = [materialInterior, materialExterior, edgeMaterial, edgeMaterial, edgeMaterial, edgeMaterial];
+        // U thickness for all edges (2, 3, 4, 5) on side panels
+        const rightMats = [materialExterior, materialInterior, edgeMatU, edgeMatU, edgeMatU, edgeMatU];
+        const leftMats = [materialInterior, materialExterior, edgeMatU, edgeMatU, edgeMatU, edgeMatU];
 
-        // 0: right, 1: left, 2: top (int), 3: bottom (ext), 4: front, 5: back
-        const bottomMats = [edgeMaterial, edgeMaterial, materialInterior, materialExterior, edgeMaterial, edgeMaterial];
+        // V thickness for all edges (0, 1, 4, 5) on bottom panel
+        const bottomMats = [edgeMatV, edgeMatV, materialInterior, materialExterior, edgeMatV, edgeMatV];
 
         const panels = [
             { size: [frontBackW, h, visualThickness], pos: [0, 0, w / 2 - visualThickness / 2], mats: frontMats },
@@ -408,7 +415,7 @@
             mesh.position.set(p.pos[0], p.pos[1], p.pos[2]);
             mesh.castShadow = true;
             mesh.receiveShadow = true;
-            mainGroup.add(mesh);
+            boxGroup.add(mesh);
         });
 
         /* ── REALISTIC OPEN FLAPS ── */
@@ -427,7 +434,7 @@
         // Front Flap
         const frontFlapGeo = new THREE.BoxGeometry(flapL_major, visualThickness, flapW_major);
         frontFlapGeo.translate(0, visualThickness / 2, flapW_major / 2);
-        const flapFrontMats = [edgeMaterial, edgeMaterial, materialInterior, materialExterior, edgeMaterial, edgeMaterial];
+        const flapFrontMats = [edgeMatV, edgeMatV, materialInterior, materialExterior, edgeMatV, edgeMatV];
         const frontFlap = new THREE.Mesh(frontFlapGeo, flapFrontMats);
         frontFlap.castShadow = true;
         frontFlap.receiveShadow = true;
@@ -435,12 +442,12 @@
         pivotFront.position.set(0, h / 2, w / 2 - visualThickness);
         pivotFront.rotation.x = angleFront;
         pivotFront.add(frontFlap);
-        mainGroup.add(pivotFront);
+        boxGroup.add(pivotFront);
 
         // Back Flap
         const backFlapGeo = new THREE.BoxGeometry(flapL_major, visualThickness, flapW_major);
         backFlapGeo.translate(0, visualThickness / 2, -flapW_major / 2);
-        const flapBackMats = [edgeMaterial, edgeMaterial, materialInterior, materialExterior, edgeMaterial, edgeMaterial];
+        const flapBackMats = [edgeMatV, edgeMatV, materialInterior, materialExterior, edgeMatV, edgeMatV];
         const backFlap = new THREE.Mesh(backFlapGeo, flapBackMats);
         backFlap.castShadow = true;
         backFlap.receiveShadow = true;
@@ -448,12 +455,12 @@
         pivotBack.position.set(0, h / 2, -w / 2 + visualThickness);
         pivotBack.rotation.x = angleBack;
         pivotBack.add(backFlap);
-        mainGroup.add(pivotBack);
+        boxGroup.add(pivotBack);
 
         // Left Flap
         const leftFlapGeo = new THREE.BoxGeometry(flapW_minor, visualThickness, flapL_minor);
         leftFlapGeo.translate(-flapW_minor / 2, visualThickness / 2, 0);
-        const flapLeftMats = [edgeMaterial, edgeMaterial, materialInterior, materialExterior, edgeMaterial, edgeMaterial];
+        const flapLeftMats = [edgeMatV, edgeMatV, materialInterior, materialExterior, edgeMatV, edgeMatV];
         const leftFlap = new THREE.Mesh(leftFlapGeo, flapLeftMats);
         leftFlap.castShadow = true;
         leftFlap.receiveShadow = true;
@@ -461,12 +468,12 @@
         pivotLeft.position.set(-l / 2 + visualThickness, h / 2, 0);
         pivotLeft.rotation.z = angleLeft;
         pivotLeft.add(leftFlap);
-        mainGroup.add(pivotLeft);
+        boxGroup.add(pivotLeft);
 
         // Right Flap
         const rightFlapGeo = new THREE.BoxGeometry(flapW_minor, visualThickness, flapL_minor);
         rightFlapGeo.translate(flapW_minor / 2, visualThickness / 2, 0);
-        const flapRightMats = [edgeMaterial, edgeMaterial, materialInterior, materialExterior, edgeMaterial, edgeMaterial];
+        const flapRightMats = [edgeMatV, edgeMatV, materialInterior, materialExterior, edgeMatV, edgeMatV];
         const rightFlap = new THREE.Mesh(rightFlapGeo, flapRightMats);
         rightFlap.castShadow = true;
         rightFlap.receiveShadow = true;
@@ -474,52 +481,97 @@
         pivotRight.position.set(l / 2 - visualThickness, h / 2, 0);
         pivotRight.rotation.z = angleRight;
         pivotRight.add(rightFlap);
-        mainGroup.add(pivotRight);
+        boxGroup.add(pivotRight);
     }
 
-    /* Helper: Corrugated edge bump map */
-    function createCorrugatedBumpMap() {
-        if (textureCache.corrugated) return textureCache.corrugated;
-        const size = 256;
+    /* Helper: Layered edge map (color or bump) */
+    function createLayeredEdgeCanvas(ply, isU, isBump) {
+        const key = `edge_${ply}_${isU ? 'u' : 'v'}_${isBump ? 'b' : 'c'}`;
+        if (textureCache[key]) return textureCache[key];
+
+        const size = 512;
         const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
         
-        ctx.fillStyle = '#1a1a1a'; // Deep shadows in the flute gaps
+        // Fill background
+        ctx.fillStyle = isBump ? '#1a1a1a' : '#8A6A44'; 
         ctx.fillRect(0, 0, size, size);
-        
-        // Draw wavy flutes
-        const flutes = 16;
-        const width = size / flutes;
-        for (let i = 0; i < flutes; i++) {
-            const x = i * width;
-            const grad = ctx.createLinearGradient(x, 0, x + width, 0);
-            grad.addColorStop(0, '#1a1a1a');
-            grad.addColorStop(0.5, '#ffffff'); // Peak of the flute
-            grad.addColorStop(1, '#1a1a1a');
-            
-            ctx.fillStyle = grad;
-            ctx.fillRect(x, 0, width, size);
-        }
 
+        const data = PLY_DATA[ply] || PLY_DATA[3];
+        const layers = data.layerCount || 3;
+        const layerThickness = size / layers;
+
+        for (let i = 0; i < layers; i++) {
+            const isFlute = i % 2 === 1;
+            const pos = i * layerThickness;
+            
+            if (!isFlute) {
+                ctx.fillStyle = isBump ? '#ffffff' : '#A8824A';
+                if (isU) ctx.fillRect(pos, 0, Math.ceil(layerThickness), size);
+                else ctx.fillRect(0, pos, size, Math.ceil(layerThickness));
+            } else {
+                const flutes = 48; // Dense flutes for realistic look
+                const waveWidth = size / flutes;
+                
+                for (let j = 0; j < flutes; j++) {
+                    const wavePos = j * waveWidth;
+                    let grad;
+                    if (isU) grad = ctx.createLinearGradient(0, wavePos, 0, wavePos + waveWidth);
+                    else grad = ctx.createLinearGradient(wavePos, 0, wavePos + waveWidth, 0);
+                    
+                    if (isBump) {
+                        grad.addColorStop(0, '#1a1a1a');
+                        grad.addColorStop(0.5, '#ffffff');
+                        grad.addColorStop(1, '#1a1a1a');
+                    } else {
+                        grad.addColorStop(0, '#755531');
+                        grad.addColorStop(0.5, '#B08E55');
+                        grad.addColorStop(1, '#755531');
+                    }
+                    
+                    ctx.fillStyle = grad;
+                    if (isU) ctx.fillRect(pos, wavePos, Math.ceil(layerThickness), Math.ceil(waveWidth));
+                    else ctx.fillRect(wavePos, pos, Math.ceil(waveWidth), Math.ceil(layerThickness));
+                }
+            }
+        }
+        
         const tex = new THREE.CanvasTexture(canvas);
-        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        tex.repeat.set(8, 1); // Repeat often along the length of the edge
+        if (isU) {
+            tex.wrapS = THREE.ClampToEdgeWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(1, 10);
+        } else {
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.ClampToEdgeWrapping;
+            tex.repeat.set(10, 1);
+        }
+        
         if (renderer && renderer.capabilities && typeof renderer.capabilities.getMaxAnisotropy === 'function') {
             tex.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
         }
-        textureCache.corrugated = tex;
+        textureCache[key] = tex;
         return tex;
     }
 
     /* ── DIMENSION LINES ── */
     function buildDimensionLines(l, w, h) {
-        const lineMat = new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.8 });
+        const lineMat = new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.7 });
+
+        /* Responsive offset: tighter on mobile, comfortable on desktop */
+        const container = document.getElementById('boxViewer');
+        const viewerWidth = container ? container.clientWidth : 1440;
+        let offsetScale;
+        if (viewerWidth <= 480) { offsetScale = 0.22; }       /* mobile: compact */
+        else if (viewerWidth <= 800) { offsetScale = 0.28; }   /* tablet: moderate */
+        else { offsetScale = 0.32; }                            /* desktop: comfortable */
+
         const maxSpan = Math.max(l, w, h);
-        // Push offset to 70% of max span so it clears the flaps completely
-        const offset = Math.max(0.8, maxSpan * 0.7);
-        const tickSize = Math.max(0.12, offset * 0.15);
+        const offset = Math.max(0.25, maxSpan * offsetScale);
+        const tickSize = Math.max(0.06, offset * 0.18);
+        const labelGap = Math.max(0.12, offset * 0.25);
 
         // LENGTH Line (along X axis, placed in front of the box at +Z)
         const lenPts = [
@@ -527,13 +579,13 @@
             new THREE.Vector3(l / 2, -h / 2, w / 2 + offset)
         ];
         const lenGeo = new THREE.BufferGeometry().setFromPoints(lenPts);
-        mainGroup.add(new THREE.Line(lenGeo, lineMat));
-        addTick(mainGroup, -l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
-        addTick(mainGroup, l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
+        annotationGroup.add(new THREE.Line(lenGeo, lineMat));
+        addTick(annotationGroup, -l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
+        addTick(annotationGroup, l / 2, -h / 2, w / 2 + offset, 0, 0, tickSize, lineMat);
         const lenLabel = makeLabel(formatDim(state.length), 'dim-label');
         if (lenLabel) {
-            lenLabel.position.set(0, -h / 2, w / 2 + offset + 0.45); // centered on X
-            mainGroup.add(lenLabel);
+            lenLabel.position.set(0, -h / 2, w / 2 + offset + labelGap);
+            annotationGroup.add(lenLabel);
         }
 
         // WIDTH Line (along Z axis, placed to the right of the box at +X)
@@ -542,28 +594,29 @@
             new THREE.Vector3(l / 2 + offset, -h / 2, w / 2)
         ];
         const widGeo = new THREE.BufferGeometry().setFromPoints(widPts);
-        mainGroup.add(new THREE.Line(widGeo, lineMat));
-        addTick(mainGroup, l / 2 + offset, -h / 2, -w / 2, tickSize, 0, 0, lineMat);
-        addTick(mainGroup, l / 2 + offset, -h / 2, w / 2, tickSize, 0, 0, lineMat);
+        annotationGroup.add(new THREE.Line(widGeo, lineMat));
+        addTick(annotationGroup, l / 2 + offset, -h / 2, -w / 2, tickSize, 0, 0, lineMat);
+        addTick(annotationGroup, l / 2 + offset, -h / 2, w / 2, tickSize, 0, 0, lineMat);
         const widLabel = makeLabel(formatDim(state.width), 'dim-label');
         if (widLabel) {
-            widLabel.position.set(l / 2 + offset + 0.45, -h / 2, 0); // centered on Z
-            mainGroup.add(widLabel);
+            widLabel.position.set(l / 2 + offset + labelGap, -h / 2, 0);
+            annotationGroup.add(widLabel);
         }
 
         // HEIGHT Line (along Y axis, placed to the left and back)
+        const hOffset = offset * 0.55;
         const hPts = [
-            new THREE.Vector3(-l / 2 - offset * 0.5, -h / 2, -w / 2 - offset * 0.3),
-            new THREE.Vector3(-l / 2 - offset * 0.5, h / 2, -w / 2 - offset * 0.3)
+            new THREE.Vector3(-l / 2 - hOffset, -h / 2, -w / 2 - hOffset * 0.5),
+            new THREE.Vector3(-l / 2 - hOffset, h / 2, -w / 2 - hOffset * 0.5)
         ];
         const hGeo = new THREE.BufferGeometry().setFromPoints(hPts);
-        mainGroup.add(new THREE.Line(hGeo, lineMat));
-        addTick(mainGroup, -l / 2 - offset * 0.5, -h / 2, -w / 2 - offset * 0.3, tickSize, 0, 0, lineMat);
-        addTick(mainGroup, -l / 2 - offset * 0.5, h / 2, -w / 2 - offset * 0.3, tickSize, 0, 0, lineMat);
+        annotationGroup.add(new THREE.Line(hGeo, lineMat));
+        addTick(annotationGroup, -l / 2 - hOffset, -h / 2, -w / 2 - hOffset * 0.5, tickSize, 0, 0, lineMat);
+        addTick(annotationGroup, -l / 2 - hOffset, h / 2, -w / 2 - hOffset * 0.5, tickSize, 0, 0, lineMat);
         const hLabel = makeLabel(formatDim(state.height), 'dim-label');
         if (hLabel) {
-            hLabel.position.set(-l / 2 - offset * 0.6 - 0.55, 0, -w / 2 - offset * 0.4);
-            mainGroup.add(hLabel);
+            hLabel.position.set(-l / 2 - hOffset - labelGap, 0, -w / 2 - hOffset * 0.5);
+            annotationGroup.add(hLabel);
         }
     }
 
@@ -603,13 +656,13 @@
                 mesh.position.y = yPos;
                 mesh.castShadow = true;
                 mesh.receiveShadow = true;
-                mainGroup.add(mesh);
+                boxGroup.add(mesh);
             }
             const name = data.layerNames[i] || ('Layer ' + (i + 1));
             const label = makeLabel(name, 'layer-label');
             if (label) {
                 label.position.set(l * 0.52, yPos, 0);
-                mainGroup.add(label);
+                annotationGroup.add(label);
             }
         }
     }
@@ -655,7 +708,7 @@
         });
         const mesh = new THREE.Mesh(geo, mat);
         mesh.castShadow = true;
-        mainGroup.add(mesh);
+        boxGroup.add(mesh);
     }
 
     function setupControls() {
@@ -710,7 +763,7 @@
 
         zoomCurrent += (zoomTarget - zoomCurrent) * zoomSmoothing;
         camera.position.set(0, 0.2, zoomCurrent);
-        camera.lookAt(0, 0.05, 0);
+        camera.lookAt(boxCenter[0], boxCenter[1] + 0.05, boxCenter[2]);
 
         renderer.render(scene, camera);
         if (labelRenderer) labelRenderer.render(scene, camera);
@@ -921,7 +974,7 @@
         const btn = document.getElementById('btnReset');
         if (!btn) return;
         btn.addEventListener('click', () => {
-            rotationTarget.x = -0.3; rotationTarget.y = 0.5;
+            rotationTarget.x = -0.35; rotationTarget.y = 0.6;
             lastInteractionAt = 0; state.exploded = false;
             const exBtn = document.getElementById('btnExplode');
             if (exBtn) {
@@ -1074,23 +1127,35 @@
     }
 
     function frameView() {
-        if (!hasThreeSupport || !mainGroup || !camera) return;
-        const bounds = new THREE.Box3().setFromObject(mainGroup);
+        if (!hasThreeSupport || !camera) return;
+        /* Use boxGroup bounds (product only) when available, fall back to mainGroup */
+        const target = (boxGroup && boxGroup.children.length > 0) ? boxGroup : mainGroup;
+        if (!target) return;
+        const bounds = new THREE.Box3().setFromObject(target);
         const size = bounds.getSize(new THREE.Vector3());
+        const center = bounds.getCenter(new THREE.Vector3());
+
+        /* Cache box center for dynamic lookAt */
+        boxCenter[0] = center.x;
+        boxCenter[1] = center.y;
+        boxCenter[2] = center.z;
+
+        /* Robust camera fit: account for both height and width */
         const maxDim = Math.max(size.x, size.y, size.z, 0.5);
         const vFov = THREE.MathUtils.degToRad(camera.fov * 0.5);
-        const distHeight = maxDim / (2 * Math.tan(vFov));
-        const distWidth = maxDim / (2 * Math.tan(vFov) * camera.aspect);
-        const dist = Math.max(distHeight, distWidth) * 1.25;
+        const distHeight = (maxDim * 0.5) / Math.tan(vFov);
+        const distWidth = (maxDim * 0.5) / (Math.tan(vFov) * camera.aspect);
+        const dist = Math.max(distHeight, distWidth) * 1.15; /* tight but safe margin */
         zoomTarget = THREE.MathUtils.clamp(dist, ZOOM_MIN, ZOOM_MAX);
-        if (groundPlane) groundPlane.position.y = bounds.min.y - 0.08;
+        if (groundPlane) groundPlane.position.y = bounds.min.y - 0.06;
     }
 
     function disposeMaterial(mat) {
         if (!mat) return;
         if (Array.isArray(mat)) { mat.forEach(disposeMaterial); return; }
-        if (mat.map && mat.map !== textureCache.kraft) mat.map.dispose();
-        if (mat.bumpMap && mat.bumpMap !== textureCache.corrugated) mat.bumpMap.dispose();
+        const cacheVals = Object.values(textureCache);
+        if (mat.map && !cacheVals.includes(mat.map)) mat.map.dispose();
+        if (mat.bumpMap && !cacheVals.includes(mat.bumpMap)) mat.bumpMap.dispose();
         mat.dispose();
     }
 
