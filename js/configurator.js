@@ -376,30 +376,36 @@
             metalness: 0.02
         });
 
-        const edgeMatU = new THREE.MeshStandardMaterial({
-            map: createLayeredEdgeCanvas(ply, true, false),
-            bumpMap: createLayeredEdgeCanvas(ply, true, true), 
+        const createMat = (isU, isWave) => new THREE.MeshStandardMaterial({
+            map: createLayeredEdgeCanvas(ply, isU, false, isWave),
+            bumpMap: createLayeredEdgeCanvas(ply, isU, true, isWave), 
             bumpScale: 0.03, roughness: 0.9, metalness: 0.0
         });
-        const edgeMatV = new THREE.MeshStandardMaterial({
-            map: createLayeredEdgeCanvas(ply, false, false),
-            bumpMap: createLayeredEdgeCanvas(ply, false, true), 
-            bumpScale: 0.03, roughness: 0.9, metalness: 0.0
-        });
+
+        const edgeMatU_Wave = createMat(true, true);
+        const edgeMatU_Line = createMat(true, false);
+        const edgeMatV_Wave = createMat(false, true);
+        const edgeMatV_Line = createMat(false, false);
 
         const frontBackW = l;
         const sideW = w - (visualThickness * 2);
 
-        // U thickness for left/right (0, 1). V thickness for top/bottom (2, 3)
-        const frontMats = [edgeMatU, edgeMatU, edgeMatV, edgeMatV, materialExterior, materialInterior];
-        const backMats = [edgeMatU, edgeMatU, edgeMatV, edgeMatV, materialInterior, materialExterior];
+        // Front/Back panels: Flutes run vertically (Y axis). 
+        // Side edges (left/right) are X axis (U). They are parallel to flutes -> LINES.
+        // Top/Bottom edges are Y axis (V). They cut across flutes -> WAVES.
+        const frontMats = [edgeMatU_Line, edgeMatU_Line, edgeMatV_Wave, edgeMatV_Wave, materialExterior, materialInterior];
+        const backMats = [edgeMatU_Line, edgeMatU_Line, edgeMatV_Wave, edgeMatV_Wave, materialInterior, materialExterior];
         
-        // U thickness for all edges (2, 3, 4, 5) on side panels
-        const rightMats = [materialExterior, materialInterior, edgeMatU, edgeMatU, edgeMatU, edgeMatU];
-        const leftMats = [materialInterior, materialExterior, edgeMatU, edgeMatU, edgeMatU, edgeMatU];
+        // Left/Right panels: Flutes run vertically (Y axis). 
+        // Side edges (front/back) are Z axis (U). They are parallel to flutes -> LINES.
+        // Top/Bottom edges are Y axis (U). They cut across flutes -> WAVES.
+        const rightMats = [materialExterior, materialInterior, edgeMatU_Wave, edgeMatU_Wave, edgeMatU_Line, edgeMatU_Line];
+        const leftMats = [materialInterior, materialExterior, edgeMatU_Wave, edgeMatU_Wave, edgeMatU_Line, edgeMatU_Line];
 
-        // V thickness for all edges (0, 1, 4, 5) on bottom panel
-        const bottomMats = [edgeMatV, edgeMatV, materialInterior, materialExterior, edgeMatV, edgeMatV];
+        // Bottom panel: Flutes run along Z axis.
+        // Left/Right edges are X axis. Parallel to Z -> LINES. (Uses V for thickness).
+        // Front/Back edges are Z axis. Cut across Z -> WAVES. (Uses V for thickness).
+        const bottomMats = [edgeMatV_Line, edgeMatV_Line, materialInterior, materialExterior, edgeMatV_Wave, edgeMatV_Wave];
 
         const panels = [
             { size: [frontBackW, h, visualThickness], pos: [0, 0, w / 2 - visualThickness / 2], mats: frontMats },
@@ -434,7 +440,7 @@
         // Front Flap
         const frontFlapGeo = new THREE.BoxGeometry(flapL_major, visualThickness, flapW_major);
         frontFlapGeo.translate(0, visualThickness / 2, flapW_major / 2);
-        const flapFrontMats = [edgeMatV, edgeMatV, materialInterior, materialExterior, edgeMatV, edgeMatV];
+        const flapFrontMats = [edgeMatV_Line, edgeMatV_Line, materialInterior, materialExterior, edgeMatV_Wave, edgeMatV_Wave];
         const frontFlap = new THREE.Mesh(frontFlapGeo, flapFrontMats);
         frontFlap.castShadow = true;
         frontFlap.receiveShadow = true;
@@ -447,7 +453,7 @@
         // Back Flap
         const backFlapGeo = new THREE.BoxGeometry(flapL_major, visualThickness, flapW_major);
         backFlapGeo.translate(0, visualThickness / 2, -flapW_major / 2);
-        const flapBackMats = [edgeMatV, edgeMatV, materialInterior, materialExterior, edgeMatV, edgeMatV];
+        const flapBackMats = [edgeMatV_Line, edgeMatV_Line, materialInterior, materialExterior, edgeMatV_Wave, edgeMatV_Wave];
         const backFlap = new THREE.Mesh(backFlapGeo, flapBackMats);
         backFlap.castShadow = true;
         backFlap.receiveShadow = true;
@@ -460,7 +466,7 @@
         // Left Flap
         const leftFlapGeo = new THREE.BoxGeometry(flapW_minor, visualThickness, flapL_minor);
         leftFlapGeo.translate(-flapW_minor / 2, visualThickness / 2, 0);
-        const flapLeftMats = [edgeMatV, edgeMatV, materialInterior, materialExterior, edgeMatV, edgeMatV];
+        const flapLeftMats = [edgeMatV_Wave, edgeMatV_Wave, materialInterior, materialExterior, edgeMatV_Line, edgeMatV_Line];
         const leftFlap = new THREE.Mesh(leftFlapGeo, flapLeftMats);
         leftFlap.castShadow = true;
         leftFlap.receiveShadow = true;
@@ -473,7 +479,7 @@
         // Right Flap
         const rightFlapGeo = new THREE.BoxGeometry(flapW_minor, visualThickness, flapL_minor);
         rightFlapGeo.translate(flapW_minor / 2, visualThickness / 2, 0);
-        const flapRightMats = [edgeMatV, edgeMatV, materialInterior, materialExterior, edgeMatV, edgeMatV];
+        const flapRightMats = [edgeMatV_Wave, edgeMatV_Wave, materialInterior, materialExterior, edgeMatV_Line, edgeMatV_Line];
         const rightFlap = new THREE.Mesh(rightFlapGeo, flapRightMats);
         rightFlap.castShadow = true;
         rightFlap.receiveShadow = true;
@@ -485,8 +491,8 @@
     }
 
     /* Helper: Layered edge map (color or bump) */
-    function createLayeredEdgeCanvas(ply, isU, isBump) {
-        const key = `edge_${ply}_${isU ? 'u' : 'v'}_${isBump ? 'b' : 'c'}`;
+    function createLayeredEdgeCanvas(ply, isU, isBump, isWave = true) {
+        const key = `edge_${ply}_${isU ? 'u' : 'v'}_${isBump ? 'b' : 'c'}_${isWave ? 'w' : 'l'}`;
         if (textureCache[key]) return textureCache[key];
 
         const size = 512;
@@ -508,32 +514,47 @@
             const pos = i * layerThickness;
             
             if (!isFlute) {
+                // Liner
                 ctx.fillStyle = isBump ? '#ffffff' : '#A8824A';
                 if (isU) ctx.fillRect(pos, 0, Math.ceil(layerThickness), size);
                 else ctx.fillRect(0, pos, size, Math.ceil(layerThickness));
             } else {
-                const flutes = 48; // Dense flutes for realistic look
-                const waveWidth = size / flutes;
-                
-                for (let j = 0; j < flutes; j++) {
-                    const wavePos = j * waveWidth;
-                    let grad;
-                    if (isU) grad = ctx.createLinearGradient(0, wavePos, 0, wavePos + waveWidth);
-                    else grad = ctx.createLinearGradient(wavePos, 0, wavePos + waveWidth, 0);
-                    
-                    if (isBump) {
-                        grad.addColorStop(0, '#1a1a1a');
-                        grad.addColorStop(0.5, '#ffffff');
-                        grad.addColorStop(1, '#1a1a1a');
-                    } else {
-                        grad.addColorStop(0, '#755531');
-                        grad.addColorStop(0.5, '#B08E55');
-                        grad.addColorStop(1, '#755531');
+                // Flute layer
+                if (isWave) {
+                    const flutes = 48; // Dense flutes for realistic look
+                    const waveWidth = size / flutes;
+                    for (let j = 0; j < flutes; j++) {
+                        const wavePos = j * waveWidth;
+                        let grad;
+                        if (isU) grad = ctx.createLinearGradient(0, wavePos, 0, wavePos + waveWidth);
+                        else grad = ctx.createLinearGradient(wavePos, 0, wavePos + waveWidth, 0);
+                        
+                        if (isBump) {
+                            grad.addColorStop(0, '#1a1a1a');
+                            grad.addColorStop(0.5, '#ffffff');
+                            grad.addColorStop(1, '#1a1a1a');
+                        } else {
+                            grad.addColorStop(0, '#755531');
+                            grad.addColorStop(0.5, '#B08E55');
+                            grad.addColorStop(1, '#755531');
+                        }
+                        
+                        ctx.fillStyle = grad;
+                        if (isU) ctx.fillRect(pos, wavePos, Math.ceil(layerThickness), Math.ceil(waveWidth));
+                        else ctx.fillRect(wavePos, pos, Math.ceil(waveWidth), Math.ceil(layerThickness));
                     }
+                } else {
+                    // Straight lines (longitudinal cut)
+                    ctx.fillStyle = isBump ? '#1a1a1a' : '#755531'; // Darker gap
+                    if (isU) ctx.fillRect(pos, 0, Math.ceil(layerThickness), size);
+                    else ctx.fillRect(0, pos, size, Math.ceil(layerThickness));
                     
-                    ctx.fillStyle = grad;
-                    if (isU) ctx.fillRect(pos, wavePos, Math.ceil(layerThickness), Math.ceil(waveWidth));
-                    else ctx.fillRect(wavePos, pos, Math.ceil(waveWidth), Math.ceil(layerThickness));
+                    // Draw center line (the flute paper cut straight)
+                    ctx.fillStyle = isBump ? '#888888' : '#A8824A'; 
+                    const centerPos = pos + layerThickness / 2;
+                    const paperThickness = layerThickness * 0.15;
+                    if (isU) ctx.fillRect(centerPos - paperThickness/2, 0, Math.ceil(paperThickness), size);
+                    else ctx.fillRect(0, centerPos - paperThickness/2, size, Math.ceil(paperThickness));
                 }
             }
         }
