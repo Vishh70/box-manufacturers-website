@@ -248,18 +248,24 @@
         const ambient = new THREE.HemisphereLight(0xffffff, 0xeef2ff, 1.1);
         scene.add(ambient);
 
-        const dirLight = new THREE.DirectionalLight(0xfffcf5, 1.6);
+        const dirLight = new THREE.DirectionalLight(0xfffcf5, 1.8);
         dirLight.position.set(-6, 10, 5); // Moves shadow to bottom right
         dirLight.castShadow = true;
         dirLight.shadow.mapSize.set(2048, 2048);
         dirLight.shadow.camera.near = 0.5;
         dirLight.shadow.camera.far = 25;
-        dirLight.shadow.bias = -0.0002;
+        dirLight.shadow.bias = -0.0001;
+        dirLight.shadow.radius = 6; // Softer PCF shadow
         scene.add(dirLight);
 
-        const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        const fillLight = new THREE.DirectionalLight(0xfff5f0, 0.7);
         fillLight.position.set(6, 4, -4);
         scene.add(fillLight);
+        
+        // Add subtle rim/specular highlight
+        const rimLight = new THREE.PointLight(0xffffff, 0.4, 20);
+        rimLight.position.set(0, 5, -8);
+        scene.add(rimLight);
 
         /* Ground shadow plane — soft studio shadow */
         const groundGeo = new THREE.PlaneGeometry(20, 20);
@@ -446,9 +452,15 @@
         frontFlap.receiveShadow = true;
         const pivotFront = new THREE.Group();
         pivotFront.position.set(0, h / 2, w / 2 - visualThickness);
-        pivotFront.rotation.x = angleFront;
+        pivotFront.rotation.x = -Math.PI / 2; // Start closed
         pivotFront.add(frontFlap);
         boxGroup.add(pivotFront);
+
+        if (typeof gsap !== 'undefined') {
+            gsap.to(pivotFront.rotation, { x: angleFront, duration: 1.2, ease: "power2.out", delay: 0.1 });
+        } else {
+            pivotFront.rotation.x = angleFront;
+        }
 
         // Back Flap
         const backFlapGeo = new THREE.BoxGeometry(flapL_major, visualThickness, flapW_major);
@@ -459,9 +471,15 @@
         backFlap.receiveShadow = true;
         const pivotBack = new THREE.Group();
         pivotBack.position.set(0, h / 2, -w / 2 + visualThickness);
-        pivotBack.rotation.x = angleBack;
+        pivotBack.rotation.x = Math.PI / 2; // Start closed
         pivotBack.add(backFlap);
         boxGroup.add(pivotBack);
+
+        if (typeof gsap !== 'undefined') {
+            gsap.to(pivotBack.rotation, { x: angleBack, duration: 1.2, ease: "power2.out", delay: 0.1 });
+        } else {
+            pivotBack.rotation.x = angleBack;
+        }
 
         // Left Flap
         const leftFlapGeo = new THREE.BoxGeometry(flapW_minor, visualThickness, flapL_minor);
@@ -472,9 +490,15 @@
         leftFlap.receiveShadow = true;
         const pivotLeft = new THREE.Group();
         pivotLeft.position.set(-l / 2 + visualThickness, h / 2, 0);
-        pivotLeft.rotation.z = angleLeft;
+        pivotLeft.rotation.z = -Math.PI / 2; // Start closed
         pivotLeft.add(leftFlap);
         boxGroup.add(pivotLeft);
+
+        if (typeof gsap !== 'undefined') {
+            gsap.to(pivotLeft.rotation, { z: angleLeft, duration: 1.2, ease: "power2.out", delay: 0.3 });
+        } else {
+            pivotLeft.rotation.z = angleLeft;
+        }
 
         // Right Flap
         const rightFlapGeo = new THREE.BoxGeometry(flapW_minor, visualThickness, flapL_minor);
@@ -485,9 +509,15 @@
         rightFlap.receiveShadow = true;
         const pivotRight = new THREE.Group();
         pivotRight.position.set(l / 2 - visualThickness, h / 2, 0);
-        pivotRight.rotation.z = angleRight;
+        pivotRight.rotation.z = Math.PI / 2; // Start closed
         pivotRight.add(rightFlap);
         boxGroup.add(pivotRight);
+
+        if (typeof gsap !== 'undefined') {
+            gsap.to(pivotRight.rotation, { z: angleRight, duration: 1.2, ease: "power2.out", delay: 0.3 });
+        } else {
+            pivotRight.rotation.z = angleRight;
+        }
     }
 
     /* Helper: Layered edge map (color or bump) */
@@ -666,29 +696,43 @@
         for (let i = 0; i < layers; i++) {
             const isFlute = i % 2 === 1;
             const layerH = isFlute ? thickness * 1.8 : thickness * 0.6;
-            const yPos = (i - (layers - 1) / 2) * gap;
+            const targetY = (i - (layers - 1) / 2) * gap;
 
             if (isFlute) {
-                buildFluteLayer(l * 0.88, layerH, w * 0.68, yPos, layerColors[i] || 0xD4C49A);
+                buildFluteLayer(l * 0.88, layerH, w * 0.68, targetY, layerColors[i] || 0xD4C49A);
             } else {
                 const geo = new THREE.BoxGeometry(l * 0.88, layerH, w * 0.68);
                 const mat = createLayerMaterial(layerColors[i] || 0xC4A86B, false);
                 const mesh = new THREE.Mesh(geo, mat);
-                mesh.position.y = yPos;
+                mesh.position.y = 0;
                 mesh.castShadow = true;
                 mesh.receiveShadow = true;
                 boxGroup.add(mesh);
+                
+                // GSAP animation
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(mesh.position, { y: targetY, duration: 1.2, ease: "power3.out", delay: i * 0.05 });
+                } else {
+                    mesh.position.y = targetY;
+                }
             }
+            
             const name = data.layerNames[i] || ('Layer ' + (i + 1));
             const label = makeLabel(name, 'layer-label');
             if (label) {
-                label.position.set(l * 0.52, yPos, 0);
+                label.position.set(l * 0.52, 0, 0);
                 annotationGroup.add(label);
+                
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(label.position, { y: targetY, duration: 1.2, ease: "power3.out", delay: i * 0.05 });
+                } else {
+                    label.position.y = targetY;
+                }
             }
         }
     }
 
-    function buildFluteLayer(layerW, layerH, layerD, yPos, color) {
+    function buildFluteLayer(layerW, layerH, layerD, targetY, color) {
         const segments = 30;
         const amplitude = layerH * 0.4;
         const frequency = 8;
@@ -706,7 +750,7 @@
             for (let i = 0; i <= cols; i++) {
                 const x = -halfW + (i / cols) * layerW;
                 const wave = Math.sin((i / cols) * Math.PI * 2 * frequency) * amplitude;
-                vertices.push(x, yPos + wave, z);
+                vertices.push(x, wave, z); // Build at y=0 locally
                 normals.push(0, 1, 0);
             }
         }
@@ -729,7 +773,15 @@
         });
         const mesh = new THREE.Mesh(geo, mat);
         mesh.castShadow = true;
+        mesh.position.y = 0;
         boxGroup.add(mesh);
+        
+        // GSAP animation
+        if (typeof gsap !== 'undefined') {
+            gsap.to(mesh.position, { y: targetY, duration: 1.2, ease: "power3.out", delay: (targetY > 0 ? 0.2 : 0.1) });
+        } else {
+            mesh.position.y = targetY;
+        }
     }
 
     function setupControls() {
@@ -987,7 +1039,25 @@
             btn.classList.toggle('active', state.exploded);
             const span = btn.querySelector('span');
             if (span) span.textContent = state.exploded ? 'Solid View' : 'Show Layers';
-            buildBox();
+            
+            if (state.exploded) {
+                buildBox();
+            } else {
+                if (typeof gsap !== 'undefined' && boxGroup.children.length > 0) {
+                    boxGroup.children.forEach(child => {
+                        gsap.to(child.position, { y: 0, duration: 0.6, ease: "power3.inOut" });
+                    });
+                    annotationGroup.children.forEach(child => {
+                        if (child.element && child.element.className === 'layer-label') {
+                            gsap.to(child.position, { y: 0, duration: 0.6, ease: "power3.inOut" });
+                            gsap.to(child.element, { opacity: 0, duration: 0.4 });
+                        }
+                    });
+                    setTimeout(() => { buildBox(); }, 600);
+                } else {
+                    buildBox();
+                }
+            }
         });
     }
 
